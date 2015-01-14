@@ -8,5 +8,5 @@ LIBS = $(LIBS_ffmpeg) $(LIBS_opencv)
 CXXFLAGS = -std=c++11 -g -O0 -Wall
 
 all:
-	g++ -o test test.cpp $(CXXFLAGS) $(LIBS)
+	g++ -o stereo_to_depthmap main.cpp $(CXXFLAGS) $(LIBS)
 
