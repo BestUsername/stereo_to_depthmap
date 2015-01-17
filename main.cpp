@@ -108,6 +108,12 @@ static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
 	struct arguments *arguments = (struct arguments*)(state->input);
+
+	auto is_fourcc_char = [](char character) {
+		//there are currently 3 fourcc codes that include the space character
+		// ("RLE ", "Y16 ", "Y8  ")
+		return isalnum(character) || isspace(character);
+	};
 	
 	switch (key)
 	{
@@ -128,8 +134,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 				int fourcc = 0;
 				if (strlen(arg) == 4)
 				{
-					//check if [a-z,A-Z,0-9]
-					if (isalnum(arg[0]) && isalnum(arg[1]) && isalnum(arg[2]) && isalnum(arg[3]))
+					if (is_fourcc_char(arg[0]) && is_fourcc_char(arg[1]) && is_fourcc_char(arg[2]) && is_fourcc_char(arg[3]))
 					{
 						fourcc = CV_FOURCC(arg[0],arg[1],arg[2],arg[3]);
 						is_valid = true;
