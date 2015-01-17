@@ -9,24 +9,20 @@
 const char* argp_program_version = "stereo_to_depthmap 1.0";
 const char* argp_program_bug_address = "<bugs@marc.zone>";
 
-bool to_bool(std::string str) {
-	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-	std::istringstream is(str);
-	bool b;
-	is >> std::boolalpha >> b;
-	return b;
-}
-
 /* This structure is used by main to communicate with parse_opt. */
 struct arguments
 {
-	arguments()
-	{
+	arguments() {
+		reset();
+	}
+
+	void reset() {
 		verbose = false;
 		nogui = false;
 		output_fourcc = CV_FOURCC_DEFAULT;
+		//next two must only point to dynamically allocated memory.
 		input_filename = NULL;
-		output_filename = strdup("output.avi");
+		output_filename = NULL;
 		num_disparities = 16;
 		SAD_window_size = 15;
 		min_disparity = 0;
@@ -38,6 +34,97 @@ struct arguments
 		speckle_window_size = 0;
 		speckle_range = 0;
 		full_dp = false;
+	}
+
+	bool set_fourcc(const char* code) {
+		bool retval = false;
+
+		//lambda to check if a specific character is valid for fourcc input
+		auto is_fourcc_char = [](char character) {
+			//there are currently 3 fourcc codes that include the space character
+			// ("RLE ", "Y16 ", "Y8  ")
+			return isalnum(character) || isspace(character);
+		};
+
+		if (strlen(code) == 4) {
+			if (is_fourcc_char(code[0]) && is_fourcc_char(code[1]) && is_fourcc_char(code[2]) && is_fourcc_char(code[3])) {
+				output_fourcc = CV_FOURCC(code[0], code[1], code[2], code[3]);
+				retval = true;
+			}
+		}
+		return retval;
+	}
+
+	bool is_valid(bool correct = false) {
+		/*
+		 rules:
+		 *) verbose and full_dp are boolean and independent - so no validation
+		 *) if nogui is set, filenames have to be set because pipes aren't handled yet.
+	     *) if nogui is not set, filenames are optional
+		 *) num_disparities has to be a multiple of 16 and >=0
+		 *) min_disparity >= 0
+		 *) SAD_window_size must be odd and >=1
+		 *) P1/P2 have to both be >=0 and if they're not both 0, P2 > P1
+		 *) disp12_max_diff *can* be anything, but *should* be >= -1
+		 *) pre_filter_cap should be >=0
+		 *) uniquness should be >=0
+		 *) speckle_window_size >=0
+		 *) speckle_range >=0
+		*/
+		
+		bool valid = true;
+		
+		//until the gui is put in, make infile and outfile required
+		//if (nogui) {
+			if (!input_filename) {
+				//can't correct this without using stdin/stdout
+				valid = false;
+			}
+			if (!output_filename) {
+				if (correct) {
+					//this can be corrected by reverting to default
+					output_filename = strdup("output.avi");
+				} else {
+					valid = false;
+				}
+			}
+		//}
+		if (num_disparities % 16 || num_disparities < 0) {
+			if (correct) {
+				num_disparities = std::floor(((std::max(0,num_disparities))/16))*16;
+			} else {
+				valid = false;
+			}
+		}
+		if (!((SAD_window_size % 2) && (SAD_window_size >=1))) {
+			if (correct) {
+				std::max(1, SAD_window_size % 2 ? SAD_window_size : SAD_window_size + 1);
+			} else {
+				valid = false;
+			}
+		}
+		if (!(((p1 == 0) && (p2 == 0)) || ((p2 > 1) && (p1 > 0) && (p2 > p1)))) {
+			if (correct) {
+				p1 = std::max(0, p1);
+				p2 = std::max(p1 > 0 ? p1+1 : 0, p2);
+			} else {
+				valid = false;
+			}
+		}
+		
+		// all of the rest of the variables are simple "greater than / equals"
+		auto geq = [&](int& value1, int value2) {
+			if (value1 < value2) {
+				correct ? value1 = 0 : valid = false;
+			}
+		};
+		geq(min_disparity, 0);
+		geq(pre_filter_cap, 0);
+		geq(uniqueness, 0);
+		geq(disp12_max_diff, -1);
+		geq(speckle_window_size, 0);
+		geq(speckle_range, 0);
+		return valid;
 	}
 
 	virtual ~arguments() {
@@ -68,11 +155,6 @@ struct arguments
 	int speckle_range;
 	bool full_dp;
 };
-/* set defaults for arguments structure before parsing */
-/* 
-   validate arguments structure after parsing.
-   more of a logic-check as format validation is already performed in parse_opt
- */
 
 /*
 OPTIONS.  Field 1 in ARGP.
@@ -109,12 +191,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
 	struct arguments *arguments = (struct arguments*)(state->input);
 
-	auto is_fourcc_char = [](char character) {
-		//there are currently 3 fourcc codes that include the space character
-		// ("RLE ", "Y16 ", "Y8  ")
-		return isalnum(character) || isspace(character);
-	};
-	
 	switch (key)
 	{
 		//group 0 - ungrouped
@@ -126,27 +202,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		//group 1 - input/output
 		case 'f': //fourcc
-			//enclosing variable initialization to prevent variable collision
-			{
-				//a fourcc code is valid iff made from 4 alphanumeric characters without punctuation
-				//http://www.fourcc.org/codecs.php
-				bool is_valid = false;
-				int fourcc = 0;
-				if (strlen(arg) == 4)
-				{
-					if (is_fourcc_char(arg[0]) && is_fourcc_char(arg[1]) && is_fourcc_char(arg[2]) && is_fourcc_char(arg[3]))
-					{
-						fourcc = CV_FOURCC(arg[0],arg[1],arg[2],arg[3]);
-						is_valid = true;
-					}
-				}
-				if (is_valid) 
-				{
-					//won't know if the fourcc code is actually valid until initialization
-					arguments->output_fourcc = fourcc;
-				} else {
-					argp_usage(state);
-				}
+			if (!arguments->set_fourcc(arg)) { 
+				argp_usage(state);
 			}
 			break;
 		case 'i': //infile
@@ -211,7 +268,7 @@ ARGS_DOC. Field 3 in ARGP.
 A description of the non-option command-line arguments
 that we accept.
 */
-static char args_doc[] = "INFILE OUTFILE";
+static char args_doc[] = "";
 
 /*
 DOC.  Field 4 in ARGP.
@@ -226,107 +283,118 @@ static struct argp argp = {options, parse_opt, args_doc, doc};
 
 int main( int argc, char** argv )
 {
+	//constructor initializes
 	struct arguments arguments;
-	arguments.nogui = false;
-	arguments.output_fourcc = CV_FOURCC_DEFAULT; //linux-only way to allow auto detection based on filename
-	arguments.num_disparities = 16;
-	arguments.SAD_window_size = 15;
-	
+	//parse arguments
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-	std::string windowTitle = "DepthMap";
-	cv::namedWindow( windowTitle, cv::WINDOW_AUTOSIZE );
-
-	cv::VideoCapture feed_src; //source video feed
-	cv::VideoWriter  feed_dst; //destination video feed
-
-
-	int num_disparities = arguments.num_disparities;
-	int SAD_window_size = arguments.SAD_window_size;;
-	
-	double input_width, split_width, input_height, input_fps, output_width, output_height, output_fps;
-	bool input_colour;
-	int  output_fourcc = arguments.output_fourcc;
-
-	std::string input_filename = arguments.input_filename;
-	std::string output_filename = arguments.output_filename;
-
-	{
-		bool valid = true;
-		feed_src.open(input_filename);
-		if (!feed_src.isOpened()) {
-			std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
-			valid = false;
+	if (!arguments.is_valid(false)) {
+		std::cerr << "Invalid argument settings. Attempting to correct them." << std::endl;
+		if (arguments.is_valid(true)) {
+			std::cerr << "Settings corrected. Continuing" << std::endl;
 		} else {
-			input_width = feed_src.get(CV_CAP_PROP_FRAME_WIDTH);
-			input_height = feed_src.get(CV_CAP_PROP_FRAME_HEIGHT);
-			input_fps = feed_src.get(CV_CAP_PROP_FPS);
-			split_width = input_width * 0.5;
-			
-			output_width = split_width;
-			output_height = input_height;
-			output_fps = input_fps;
-
-			feed_dst.open(output_filename, output_fourcc, output_fps, cv::Size(output_width, output_height), true /*[output_colour removed]*/); 
-			if (!feed_dst.isOpened()) {
-				std::cerr << "ERROR:\tOutput file [" << output_filename << "] cannot be opened for writing" << std::endl;
-				valid = false;
-			}
-		}
-		if (!valid) {
+			std::cerr << "Cannot correct settings. Exiting" << std::endl;
 			return EXIT_FAILURE;
-		}
+		} 
 	}
-	
-	std::cout << "Source Video:\t" << input_width << "x" << input_height << " @ " << input_fps << "fps" << std::endl;
-	
-	cv::Mat frame_src_colour, frame_src_gray, frame_dst, frame_dst_8bit_gray, frame_dst_8bit_colour, left_eye, right_eye;
-	
-	cv::StereoBM mapper(CV_STEREO_BM_BASIC, num_disparities, SAD_window_size);
 
-	//init first frame from VideoCapture
-	feed_src >> frame_src_colour;
-	//detect if frame_src is colour (usally is)
-	input_colour = frame_src_colour.channels() > 1;
-	//loop while there's current video frame data and nothing has been pressed
-	//step prep next frame
-	for (; frame_src_colour.data && (cv::waitKey(33) < 0); feed_src >> frame_src_colour) {
+	if (arguments.nogui) {
+	} else {
 
-		//input is assumed to be colour. If not, need to swap the frame_src_[gray/colour] to make sure that they are what they say they are
-		if (input_colour) 
+		std::string windowTitle = "DepthMap";
+		cv::namedWindow( windowTitle, cv::WINDOW_AUTOSIZE );
+
+		cv::VideoCapture feed_src; //source video feed
+		cv::VideoWriter  feed_dst; //destination video feed
+
+
+		int num_disparities = arguments.num_disparities;
+		int SAD_window_size = arguments.SAD_window_size;
+		
+		double input_width, split_width, input_height, input_fps, output_width, output_height, output_fps;
+		bool input_colour;
+		int  output_fourcc = arguments.output_fourcc;
+
+		std::string input_filename = std::string(arguments.input_filename);
+		std::string output_filename = std::string(arguments.output_filename);
+
 		{
-			cv::cvtColor(frame_src_colour, frame_src_gray, CV_BGR2GRAY);
-		} else {
-			frame_src_gray = frame_src_colour;
-			//if outputting colour and [sbs REMOVED], then will need a colour version of the source to overlay output on
-			//kind of useless since this will only output a larger file.
-			if (true /* [output_colour removed] */) {
-				cv::cvtColor(frame_src_gray, frame_src_colour, CV_GRAY2BGR);
+			bool valid = true;
+			feed_src.open(input_filename);
+			if (!feed_src.isOpened()) {
+				std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
+				valid = false;
+			} else {
+				input_width = feed_src.get(CV_CAP_PROP_FRAME_WIDTH);
+				input_height = feed_src.get(CV_CAP_PROP_FRAME_HEIGHT);
+				input_fps = feed_src.get(CV_CAP_PROP_FPS);
+				split_width = input_width * 0.5;
+				
+				output_width = split_width;
+				output_height = input_height;
+				output_fps = input_fps;
+
+				feed_dst.open(output_filename, output_fourcc, output_fps, cv::Size(output_width, output_height), true /*[output_colour removed]*/); 
+				if (!feed_dst.isOpened()) {
+					std::cerr << "ERROR:\tOutput file [" << output_filename << "] cannot be opened for writing" << std::endl;
+					valid = false;
+				}
+			}
+			if (!valid) {
+				return EXIT_FAILURE;
 			}
 		}
-
-		left_eye = frame_src_gray.colRange(0, split_width);
-		right_eye = frame_src_gray.colRange(split_width, input_width);
-
-		mapper(left_eye, right_eye, frame_dst);
 		
-		//the disparity mapper outputs CV_16UC1 when we need it in CV_8UC1 or CV_8UC3
-		frame_dst.convertTo(frame_dst_8bit_gray, CV_8UC1);
-		if (true /*[output_colour removed]*/) cv::cvtColor(frame_dst_8bit_gray, frame_dst_8bit_colour, CV_GRAY2BGR);
+		std::cout << "Source Video:\t" << input_width << "x" << input_height << " @ " << input_fps << "fps" << std::endl;
 		
-		if (false /* [output_sbs removed] */) {
-			if (true /* [output_colour removed] */) {
-				frame_dst_8bit_colour.copyTo(frame_src_colour(cv::Rect(0,0,frame_dst_8bit_colour.cols, frame_dst_8bit_colour.rows)));
-				feed_dst << frame_src_colour;
-				cv::imshow( windowTitle, frame_src_colour );
+		cv::Mat frame_src_colour, frame_src_gray, frame_dst, frame_dst_8bit_gray, frame_dst_8bit_colour, left_eye, right_eye;
+		
+		cv::StereoBM mapper(CV_STEREO_BM_BASIC, num_disparities, SAD_window_size);
+
+		//init first frame from VideoCapture
+		feed_src >> frame_src_colour;
+		//detect if frame_src is colour (usally is)
+		input_colour = frame_src_colour.channels() > 1;
+		//loop while there's current video frame data and nothing has been pressed
+		//step prep next frame
+		for (; frame_src_colour.data && (cv::waitKey(33) < 0); feed_src >> frame_src_colour) {
+
+			//input is assumed to be colour. If not, need to swap the frame_src_[gray/colour] to make sure that they are what they say they are
+			if (input_colour) 
+			{
+				cv::cvtColor(frame_src_colour, frame_src_gray, CV_BGR2GRAY);
 			} else {
-				frame_dst_8bit_gray.copyTo(frame_src_gray(cv::Rect(0,0,frame_dst_8bit_gray.cols, frame_dst_8bit_gray.rows)));
-				feed_dst << frame_src_gray;
-				cv::imshow( windowTitle, frame_src_gray );
+				frame_src_gray = frame_src_colour;
+				//if outputting colour and [sbs REMOVED], then will need a colour version of the source to overlay output on
+				//kind of useless since this will only output a larger file.
+				if (true /* [output_colour removed] */) {
+					cv::cvtColor(frame_src_gray, frame_src_colour, CV_GRAY2BGR);
+				}
 			}
-		} else {
-			feed_dst << frame_dst_8bit_colour; /*(output_colour ? frame_dst_8bit_colour : frame_dst_8bit_gray); [output_colour removed]*/
-			cv::imshow( windowTitle, frame_dst_8bit_gray );
+
+			left_eye = frame_src_gray.colRange(0, split_width);
+			right_eye = frame_src_gray.colRange(split_width, input_width);
+
+			mapper(left_eye, right_eye, frame_dst);
+			
+			//the disparity mapper outputs CV_16UC1 when we need it in CV_8UC1 or CV_8UC3
+			frame_dst.convertTo(frame_dst_8bit_gray, CV_8UC1);
+			if (true /*[output_colour removed]*/) cv::cvtColor(frame_dst_8bit_gray, frame_dst_8bit_colour, CV_GRAY2BGR);
+			
+			if (false /* [output_sbs removed] */) {
+				if (true /* [output_colour removed] */) {
+					frame_dst_8bit_colour.copyTo(frame_src_colour(cv::Rect(0,0,frame_dst_8bit_colour.cols, frame_dst_8bit_colour.rows)));
+					feed_dst << frame_src_colour;
+					cv::imshow( windowTitle, frame_src_colour );
+				} else {
+					frame_dst_8bit_gray.copyTo(frame_src_gray(cv::Rect(0,0,frame_dst_8bit_gray.cols, frame_dst_8bit_gray.rows)));
+					feed_dst << frame_src_gray;
+					cv::imshow( windowTitle, frame_src_gray );
+				}
+			} else {
+				feed_dst << frame_dst_8bit_colour; /*(output_colour ? frame_dst_8bit_colour : frame_dst_8bit_gray); [output_colour removed]*/
+				cv::imshow( windowTitle, frame_dst_8bit_gray );
+			}
 		}
 	}
 
