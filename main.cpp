@@ -6,7 +6,7 @@
 #include <argp.h>
 #include <iostream>
 
-const char* argp_program_version = "stereo_to_depthmap 1.0";
+const char* argp_program_version = "stereo_to_depthmap 0.1";
 const char* argp_program_bug_address = "<bugs@marc.zone>";
 
 /* This structure is used by main to communicate with parse_opt. */
