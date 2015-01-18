@@ -34,7 +34,7 @@ static struct argp_option options[] =
 	{"speckleWindowSize",   1003,   "VALUE", 0,                        "Maximum size of smooth disparity regions. Should be 50<=VALUE,=200. Default 0.", 3},
 	{"speckleRange"     ,   1004,   "VALUE", 0,                       "Maximum disparity variation within each component. Should be 1 or 2. Default 0.", 3},
 	{"fullDP"           ,   1005,         0, 0,    "If run the full-scale two-pass dynamic programming algorithm. Takes lots of memory. Default false.", 3},
-	{0}
+	{0                  ,      0,         0, 0,                                                                                                       0, 0}
 };
 
 /*
@@ -134,7 +134,7 @@ static char doc[] = "stereo_to_depthmap -- A program to calculate a depth map vi
 /*
 The ARGP structure itself.
 */
-static struct argp argp = {options, parse_opt, args_doc, doc};
+static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
 
 int main( int argc, char** argv ) {
