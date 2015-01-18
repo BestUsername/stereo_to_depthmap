@@ -1,3 +1,7 @@
+#include <QApplication>
+#include <QException>
+#include <QDebug>
+
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
@@ -7,6 +11,7 @@
 #include <iostream>
 
 #include "arguments.hpp"
+#include "qtopencvdepthmap.h"
 
 const char* argp_program_version = "stereo_to_depthmap 0.1";
 const char* argp_program_bug_address = "<bugs@marc.zone>";
@@ -206,7 +211,24 @@ int main( int argc, char** argv ) {
 			feed_dst << frame_dst_8_colour;
 		}
 	} else {
-		std::cerr << "ERROR: gui not yet implemented. Try again with the --nogui argument" << std::endl;
+
+		int res=-1;
+
+		try {
+			QApplication a(argc, argv);
+			QtOpenCVDepthmap w;
+			w.show();
+
+			res = a.exec();
+		}
+		catch(QException &e) {
+			qCritical() << QString("Exception: %1").arg( e.what() );
+		}
+		catch(...) {
+			qCritical() << QString("Unhandled Exception");
+		}
+
+		return res;
 	}
 
 	return EXIT_SUCCESS;
