@@ -1,5 +1,5 @@
-#ifndef QTGLWEBCAMDEMO_H
-#define QTGLWEBCAMDEMO_H
+#ifndef QTOPENCVDEPTHMAP_H
+#define QTOPENCVDEPTHMAP_H
 
 #include <QMainWindow>
 
@@ -29,4 +29,4 @@ protected:
     void timerEvent(QTimerEvent *event);
 };
 
-#endif // QTGLWEBCAMDEMO_H
+#endif // QTOPENCVDEPTMAP_H
