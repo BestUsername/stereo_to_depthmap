@@ -4,12 +4,14 @@
 #
 #-------------------------------------------------
 
-CONFIG += c++11
+CONFIG += c++11 debug
 QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = stereo_to_depthmap
+debug: TARGET = stereo_to_depthmap_debug
+release: TARGET = stereo_to_depthmap
+
 TEMPLATE = app
 
 LIBPATH += /usr/lib/x86_64-linux-gnu

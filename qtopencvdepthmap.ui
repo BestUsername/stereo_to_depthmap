@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Stereo To Depthmap</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>extras/logo/logo_rounded.png</normaloff>extras/logo/logo_rounded.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <argp.h>
 #include <iostream>
+#include <string>
 
 #include "arguments.hpp"
 #include "qtopencvdepthmap.h"
@@ -55,59 +56,55 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	{
 		//group 0 - ungrouped
 		case 'v': //verbose
-			arguments->verbose = true;
+            arguments->set_value<bool>(Arguments::VERBOSE, true);
 			break;
 		case 'c': //nogui
-			arguments->nogui = true;
+            arguments->set_value<bool>(Arguments::NOGUI, true);
 			break;
 		//group 1 - input/output
 		case 'f': //fourcc
-			if (!arguments->set_fourcc(arg)) { 
-				argp_usage(state);
-			}
+            arguments->set_value<std::string>(Arguments::OUTPUT_FOURCC, std::string(arg));
 			break;
 		case 'i': //infile
-			if (arguments->input_filename) delete arguments->input_filename;
-			arguments->input_filename = strdup(arg);
+            arguments->set_value<std::string>(Arguments::INPUT_FILENAME, std::string(arg));
 			break;
 		case 'o': //outfile
-			if (arguments->output_filename) delete arguments->output_filename;
-			arguments->output_filename = strdup(arg);
+            arguments->set_value<std::string>(Arguments::OUTPUT_FILENAME, std::string(arg));
 			break;
 		//group 2 - information shared between StereoSGBM and StereoBM
 		case 'd': //disparity
-			arguments->num_disparities = atoi(arg);
+            arguments->set_value<int>(Arguments::NUM_DISPARITIES, std::stoi(arg));
 			break;
 		case 'w': //SAD_window_size
-			arguments->SAD_window_size = atoi(arg);
+            arguments->set_value<int>(Arguments::SAD_WINDOW_SIZE, std::stoi(arg));
 			break;
 		//group 3 - information specific to StereoSGBM
 		case 'm': //min_disparity
-			arguments->min_disparity = atoi(arg);
+            arguments->set_value<int>(Arguments::MIN_DISPARITY, std::stoi(arg));
 			break;
 		case 't': //truncate
-			arguments->pre_filter_cap = atoi(arg);
+            arguments->set_value<int>(Arguments::PRE_FILTER_CAP, std::stoi(arg));
 			break;
 		case 'u': //uniqueness
-			arguments->uniqueness = atoi(arg);
+            arguments->set_value<int>(Arguments::UNIQUENESS, std::stoi(arg));
 			break;
 		case 1000: //P1
-			arguments->p1 = atoi(arg);
+            arguments->set_value<int>(Arguments::P1, std::stoi(arg));
 			break;
 		case 1001: //P2
-			arguments->p2 = atoi(arg);
+            arguments->set_value<int>(Arguments::P2, std::stoi(arg));
 			break;
 		case 1002: //maxDiff
-			arguments->disp12_max_diff = atoi(arg);
+            arguments->set_value<int>(Arguments::DISP12_MAX_DIFF, std::stoi(arg));
 			break;
 		case 1003: //speckleWindowSize
-			arguments->speckle_window_size = atoi(arg);
+            arguments->set_value<int>(Arguments::SPECKLE_WINDOW_SIZE, std::stoi(arg));
 			break;
 		case 1004: //speckleRange
-			arguments->speckle_range = atoi(arg);
+            arguments->set_value<int>(Arguments::SPECKLE_RANGE, std::stoi(arg));
 			break;
 		case 1005: //fullDP
-			arguments->full_dp = true;
+            arguments->set_value<int>(Arguments::FULL_DP, true);
 			break;
 		case ARGP_KEY_NO_ARGS:
 			//no arguments is valid
@@ -158,16 +155,21 @@ int main( int argc, char** argv ) {
 		} 
 	}
 
-	if (arguments.nogui) {
+    if (arguments.get_value<bool>(Arguments::NOGUI)) {
 		cv::VideoCapture feed_src; //source video feed
 		cv::VideoWriter  feed_dst; //destination video feed
 		double input_width, split_width, input_height, input_fps, output_width, output_height, output_fps;
 		//open iostreams and set dimension variables
 		{
 			bool valid = true;
-			feed_src.open(arguments.input_filename);
+
+            std::string input_filename = arguments.get_value<std::string>(Arguments::INPUT_FILENAME);
+            std::string output_filename = arguments.get_value<std::string>(Arguments::OUTPUT_FILENAME);
+            int output_fourcc = arguments.get_value<int>(Arguments::OUTPUT_FOURCC);
+
+            feed_src.open(input_filename);
 			if (!feed_src.isOpened()) {
-				std::cerr << "ERROR:\tInput file [" << arguments.input_filename << "] cannot be opened for reading" << std::endl;
+                std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
 				valid = false;
 			} else {
 				input_width = feed_src.get(CV_CAP_PROP_FRAME_WIDTH);
@@ -179,9 +181,9 @@ int main( int argc, char** argv ) {
 				output_height = input_height;
 				output_fps = input_fps;
 
-				feed_dst.open(arguments.output_filename, arguments.output_fourcc, output_fps, cv::Size(output_width, output_height), true);
+                feed_dst.open(output_filename, output_fourcc, output_fps, cv::Size(output_width, output_height), true);
 				if (!feed_dst.isOpened()) {
-					std::cerr << "ERROR:\tOutput file [" << arguments.output_filename << "] cannot be opened for writing" << std::endl;
+                    std::cerr << "ERROR:\tOutput file [" << output_filename << "] cannot be opened for writing" << std::endl;
 					valid = false;
 				}
 			}
@@ -190,11 +192,22 @@ int main( int argc, char** argv ) {
 			}
 		}
 		cv::Mat frame_src, left_eye, right_eye, frame_dst_16_gray, frame_dst_8_gray, frame_dst_8_colour;
-		
-		cv::StereoSGBM mapper(arguments.min_disparity, arguments.num_disparities, arguments.SAD_window_size, 
-		                      arguments.p1, arguments.p2, arguments.disp12_max_diff, arguments.pre_filter_cap, 
-		                      arguments.uniqueness, arguments.speckle_window_size, arguments.speckle_range,
-		                      arguments.full_dp);
+
+        int min_disparity       = arguments.get_value<int>  (Arguments::MIN_DISPARITY);
+        int num_disparities     = arguments.get_value<int>  (Arguments::NUM_DISPARITIES);
+        int SAD_window_size     = arguments.get_value<int>  (Arguments::SAD_WINDOW_SIZE);
+        int p1                  = arguments.get_value<int>  (Arguments::P1);
+        int p2                  = arguments.get_value<int>  (Arguments::P2);
+        int disp12_max_diff     = arguments.get_value<int>  (Arguments::DISP12_MAX_DIFF);
+        int pre_filter_cap      = arguments.get_value<int>  (Arguments::PRE_FILTER_CAP);
+        int uniqueness          = arguments.get_value<int>  (Arguments::UNIQUENESS);
+        int speckle_window_size = arguments.get_value<int>  (Arguments::SPECKLE_WINDOW_SIZE);
+        int speckle_range       = arguments.get_value<int>  (Arguments::SPECKLE_RANGE);
+        bool full_dp            = arguments.get_value<bool> (Arguments::FULL_DP);
+        cv::StereoSGBM mapper(min_disparity, num_disparities, SAD_window_size,
+                              p1, p2, disp12_max_diff, pre_filter_cap,
+                              uniqueness, speckle_window_size, speckle_range,
+                              full_dp);
 		
 		//init first frame from VideoCapture
 		//loop while there's current video frame data and nothing has been pressed
