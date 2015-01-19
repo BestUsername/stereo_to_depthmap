@@ -1,9 +1,9 @@
 #include <stdexcept>
-#include <mutex>
+
 #include "opencv2/highgui/highgui.hpp" //CV_FOURCC
 #include "arguments.hpp"
 
-std::mutex g_args_mutex;
+
 
 Arguments::Arguments() {
     output_filename_default = "output.avi";
@@ -14,6 +14,7 @@ Arguments::~Arguments() {
 }
 
 void Arguments::reset() {
+    g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
 	verbose = false;
 	nogui = false;
 	output_fourcc = CV_FOURCC_DEFAULT;
@@ -30,6 +31,7 @@ void Arguments::reset() {
 	speckle_window_size = 0;
 	speckle_range = 0;
 	full_dp = false;
+    g_args_mutex.unlock();
 }
 
 bool Arguments::is_valid(bool correct) {
@@ -67,6 +69,8 @@ bool Arguments::is_valid(Arg arg, bool correct) {
             correct ? value1 = 0 : valid = false;
         }
     };
+
+    g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
 
     switch(arg) {
         case VERBOSE:
@@ -159,5 +163,6 @@ bool Arguments::is_valid(Arg arg, bool correct) {
         default:
             throw std::range_error("Error: Unknown variable index");
     }
+    g_args_mutex.unlock();
     return valid;
 }

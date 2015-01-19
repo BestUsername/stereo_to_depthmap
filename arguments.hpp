@@ -1,6 +1,9 @@
 #ifndef ARGUMENTS_HPP
 #define ARGUMENTS_HPP
 
+#include <mutex>
+static std::mutex g_args_mutex;
+
 /* This class is used by main to communicate with parse_opt. */
 class Arguments
 {
@@ -48,43 +51,11 @@ public:
     bool is_valid(bool correct = false);
     bool is_valid(Arg arg, bool correct = false);
 
-    template <typename Val>
-    void try_set_fourcc(Val& value) {
 
-        //lambda to check if a specific character is valid for fourcc input
-        auto is_fourcc_char = [](char character) {
-            //there are currently 3 fourcc codes that include the space character
-            // ("RLE ", "Y16 ", "Y8  ")
-            return isalnum(character) || isspace(character);
-        };
-
-        if (std::is_same<std::string, Val>::value) {
-            std::string temp = ((std::string&) value);
-            if (temp.length() == 4) {
-                if (is_fourcc_char(temp[0]) && is_fourcc_char(temp[1]) && is_fourcc_char(temp[2]) && is_fourcc_char(temp[3])) {
-                    output_fourcc = CV_FOURCC(temp[0], temp[1], temp[2], temp[3]);
-                } else {
-                    throw std::runtime_error("Error: FOURCC code contains illegal characters");
-                }
-            } else {
-                throw std::runtime_error("Error: output_fourcc value is not 4 characters long");
-            }
-        } else {
-            throw std::runtime_error("Error: output_fourcc value is not a string");
-        }
-    }
-
-    template <typename Var, typename Val>
-    void try_set(Var& var, Val& val) {
-        if (std::is_same<Var, Val>::value) {
-            var = (Var&)(val);
-        } else {
-            throw std::runtime_error("Error: Variable and Value are not of the same type");
-        }
-    }
 
     template <typename Val>
     void set_value(Arg key, Val value) {
+        g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
         switch(key) {
             case VERBOSE:
                 try_set<bool, Val>(verbose, value);
@@ -143,10 +114,12 @@ public:
                 throw std::range_error("Error: unknown key");
                 break;
         }
+        g_args_mutex.unlock();
     }
 
     template <typename T>
     T get_value(Arg key) {
+        g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
         T retval;
         switch(key) {
             case VERBOSE:
@@ -201,10 +174,46 @@ public:
                 throw std::range_error("Error: unknown key");
                 break;
         }
+        g_args_mutex.unlock();
         return retval;
     }
 
 private:
+    template <typename Val>
+    void try_set_fourcc(Val& value) {
+
+        //lambda to check if a specific character is valid for fourcc input
+        auto is_fourcc_char = [](char character) {
+            //there are currently 3 fourcc codes that include the space character
+            // ("RLE ", "Y16 ", "Y8  ")
+            return isalnum(character) || isspace(character);
+        };
+
+        if (std::is_same<std::string, Val>::value) {
+            std::string temp = ((std::string&) value);
+            if (temp.length() == 4) {
+                if (is_fourcc_char(temp[0]) && is_fourcc_char(temp[1]) && is_fourcc_char(temp[2]) && is_fourcc_char(temp[3])) {
+                    output_fourcc = CV_FOURCC(temp[0], temp[1], temp[2], temp[3]);
+                } else {
+                    throw std::runtime_error("Error: FOURCC code contains illegal characters");
+                }
+            } else {
+                throw std::runtime_error("Error: output_fourcc value is not 4 characters long");
+            }
+        } else {
+            throw std::runtime_error("Error: output_fourcc value is not a string");
+        }
+    }
+
+    template <typename Var, typename Val>
+    void try_set(Var& var, Val& val) {
+        if (std::is_same<Var, Val>::value) {
+            var = (Var&)(val);
+        } else {
+            throw std::runtime_error("Error: Variable and Value are not of the same type");
+        }
+    }
+
 	bool verbose;
 	bool nogui;
 	int output_fourcc;
