@@ -2,14 +2,12 @@
 #include <QException>
 #include <QDebug>
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/highgui/highgui.hpp" //CV_FOURCC
+#include "opencv2/imgproc/imgproc.hpp" //CV_Gray2RGB cvtColor
+#include "opencv2/calib3d/calib3d.hpp" //StereoSGBM
 
-#include <stdio.h>
 #include <argp.h>
-#include <iostream>
-#include <string>
+#include <iostream> //cerr
 
 #include "arguments.hpp"
 #include "qtopencvdepthmap.h"

@@ -1,8 +1,6 @@
 #ifndef ARGUMENTS_HPP
 #define ARGUMENTS_HPP
 
-#include <map>
-
 /* This class is used by main to communicate with parse_opt. */
 class Arguments
 {
@@ -29,9 +27,26 @@ public:
         FULL_DP
     };
 
+    const Arg arg_list[16] = {VERBOSE,
+                             NOGUI,
+                             OUTPUT_FOURCC,
+                             INPUT_FILENAME,
+                             OUTPUT_FILENAME,
+                             NUM_DISPARITIES,
+                             SAD_WINDOW_SIZE,
+                             MIN_DISPARITY,
+                             PRE_FILTER_CAP,
+                             UNIQUENESS,
+                             P1,
+                             P2,
+                             DISP12_MAX_DIFF,
+                             SPECKLE_WINDOW_SIZE,
+                             SPECKLE_RANGE,
+                             FULL_DP};
+
 	void reset();
-    bool is_valid(Arg arg, bool correct = false);
     bool is_valid(bool correct = false);
+    bool is_valid(Arg arg, bool correct = false);
 
     template <typename Val>
     void try_set_fourcc(Val& value) {
@@ -72,52 +87,57 @@ public:
     void set_value(Arg key, Val value) {
         switch(key) {
             case VERBOSE:
-                try_set<decltype(verbose), Val>(verbose, value);
+                try_set<bool, Val>(verbose, value);
                 break;
             case NOGUI:
-                try_set(nogui, value);
+                try_set<bool, Val>(nogui, value);
                 break;
             case NUM_DISPARITIES:
-                try_set(num_disparities, value);
+                try_set<int, Val>(num_disparities, value);
                 break;
             case SAD_WINDOW_SIZE:
-                try_set(SAD_window_size, value);
+                try_set<int, Val>(SAD_window_size, value);
                 break;
             case INPUT_FILENAME:
-                try_set(input_filename, value);
+                try_set<std::string, Val>(input_filename, value);
                 break;
             case OUTPUT_FILENAME:
-                try_set(output_filename, value);
+                try_set<std::string, Val>(output_filename, value);
                 break;
             case OUTPUT_FOURCC:
-                try_set_fourcc(value);
+                //check if setting by int or by string
+                if (std::is_same<Val, int>::value) {
+                    try_set<int, Val>(output_fourcc, value);
+                } else {
+                    try_set_fourcc(value);
+                }
                 break;
             case MIN_DISPARITY:
-                try_set(min_disparity, value);
+                try_set<int, Val>(min_disparity, value);
                 break;
             case PRE_FILTER_CAP:
-                try_set(pre_filter_cap, value);
+                try_set<int, Val>(pre_filter_cap, value);
                 break;
             case UNIQUENESS:
-                try_set(uniqueness, value);
+                try_set<int, Val>(uniqueness, value);
                 break;
             case P1:
-                try_set(p1, value);
+                try_set<int, Val>(p1, value);
                 break;
             case P2:
-                try_set(p2, value);
+                try_set<int, Val>(p2, value);
                 break;
             case DISP12_MAX_DIFF:
-                try_set(disp12_max_diff, value);
+                try_set<int, Val>(disp12_max_diff, value);
                 break;
             case SPECKLE_WINDOW_SIZE:
-                try_set(speckle_window_size, value);
+                try_set<int, Val>(speckle_window_size, value);
                 break;
             case SPECKLE_RANGE:
-                try_set(speckle_range, value);
+                try_set<int, Val>(speckle_range, value);
                 break;
             case FULL_DP:
-                try_set(full_dp, value);
+                try_set<bool, Val>(full_dp, value);
                 break;
             default:
                 throw std::range_error("Error: unknown key");
