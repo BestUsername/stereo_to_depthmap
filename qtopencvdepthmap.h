@@ -4,6 +4,9 @@
 #include <QMainWindow>
 
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+
+#include "arguments.hpp"
 
 namespace Ui {
     class QtOpenCVDepthmap;
@@ -14,11 +17,14 @@ class QtOpenCVDepthmap : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit QtOpenCVDepthmap(QWidget *parent = 0);
+    explicit QtOpenCVDepthmap(Arguments& args, QWidget *parent = 0);
     ~QtOpenCVDepthmap();
 
+    void args_to_mapper();
+    void open_filename(const std::string& filename);
+    void fetch_frame(int index);
+
 private slots:
-    void on_actionStart_triggered();
     void on_actionOpen_triggered();
 
     void on_input_minDisparity_valueChanged(int arg1);
@@ -43,13 +49,24 @@ private slots:
 
     void on_input_fullDP_stateChanged(int arg1);
 
+    void on_horizontalSlider_valueChanged(int value);
+
+
 private:
+    Arguments& arguments;
+
     Ui::QtOpenCVDepthmap *ui;
+    bool is_active;
 
-    cv::VideoCapture mCapture;
+    cv::StereoSGBM mapper;
 
-protected:
-    void timerEvent(QTimerEvent *event);
+    //this chunk of variables handle video frame data
+    cv::VideoCapture feed_src;
+    cv::Mat frame_src, left_eye, right_eye, frame_dst_16_gray, frame_dst_8_gray, frame_dst_8_colour;
+
+    //this chunk of variables handle video metadata
+    double input_width, split_width, input_height, input_fps, output_width, output_height, output_fps,
+           current_pos_msec, current_pos_frame, current_pos_radio, input_frame_count;
 };
 
 #endif // QTOPENCVDEPTMAP_H

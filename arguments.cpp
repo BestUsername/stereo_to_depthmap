@@ -1,8 +1,8 @@
 #include <stdexcept>
+#include <mutex>
 #include "opencv2/highgui/highgui.hpp" //CV_FOURCC
 #include "arguments.hpp"
-#include <iostream>
-#include <mutex>
+
 std::mutex g_args_mutex;
 
 Arguments::Arguments() {
@@ -32,6 +32,16 @@ void Arguments::reset() {
 	full_dp = false;
 }
 
+bool Arguments::is_valid(bool correct) {
+    bool invalid = false;
+
+    for (const Arg& a : arg_list) {
+        invalid = invalid ||!is_valid(a, correct);
+    }
+
+    return !invalid;
+}
+
 bool Arguments::is_valid(Arg arg, bool correct) {
     /*
      rules:
@@ -59,6 +69,10 @@ bool Arguments::is_valid(Arg arg, bool correct) {
     };
 
     switch(arg) {
+        case VERBOSE:
+        case FULL_DP:
+        case OUTPUT_FOURCC:
+            break;
         case NOGUI:
             if (nogui) {
                 if (input_filename.empty()) {
@@ -72,6 +86,26 @@ bool Arguments::is_valid(Arg arg, bool correct) {
                     } else {
                         valid = false;
                     }
+                }
+            }
+            break;
+        case OUTPUT_FILENAME:
+            if (nogui) {
+                if (output_filename.empty()) {
+                    if (correct) {
+                        //this can be corrected by reverting to default
+                        output_filename = output_filename_default;
+                    } else {
+                        valid = false;
+                    }
+                }
+            }
+            break;
+        case INPUT_FILENAME:
+            if (nogui) {
+                if (input_filename.empty()) {
+                    //can't correct this without using stdin/stdout
+                    valid = false;
                 }
             }
             break;
@@ -127,59 +161,3 @@ bool Arguments::is_valid(Arg arg, bool correct) {
     }
     return valid;
 }
-
-bool Arguments::is_valid(bool correct) {
-	bool valid = true;
-
-	if (nogui) {
-        if (input_filename.empty()) {
-			//can't correct this without using stdin/stdout
-			valid = false;
-		}
-        if (output_filename.empty()) {
-			if (correct) {
-				//this can be corrected by reverting to default
-                output_filename = "output.avi";
-			} else {
-				valid = false;
-			}
-		}
-	}
-	if (num_disparities % 16 || num_disparities < 0) {
-		if (correct) {
-			num_disparities = std::floor(((std::max(0,num_disparities))/16))*16;
-		} else {
-			valid = false;
-		}
-	}
-	if (!((SAD_window_size % 2) && (SAD_window_size >=1))) {
-		if (correct) {
-			std::max(1, SAD_window_size % 2 ? SAD_window_size : SAD_window_size + 1);
-		} else {
-			valid = false;
-		}
-	}
-	if (!(((p1 == 0) && (p2 == 0)) || ((p2 > 1) && (p1 > 0) && (p2 > p1)))) {
-		if (correct) {
-			p1 = std::max(0, p1);
-			p2 = std::max(p1 > 0 ? p1+1 : 0, p2);
-		} else {
-			valid = false;
-		}
-	}
-	
-	// all of the rest of the variables are simple "greater than / equals"
-	auto geq = [&](int& value1, int value2) {
-		if (value1 < value2) {
-			correct ? value1 = 0 : valid = false;
-		}
-	};
-	geq(min_disparity, 0);
-	geq(pre_filter_cap, 0);
-	geq(uniqueness, 0);
-	geq(disp12_max_diff, -1);
-	geq(speckle_window_size, 0);
-	geq(speckle_range, 0);
-	return valid;
-}
-

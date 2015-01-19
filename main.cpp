@@ -227,7 +227,7 @@ int main( int argc, char** argv ) {
 
 		try {
 			QApplication a(argc, argv);
-			QtOpenCVDepthmap w;
+            QtOpenCVDepthmap w(arguments, 0);
 			w.show();
 
 			res = a.exec();
