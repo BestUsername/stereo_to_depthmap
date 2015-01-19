@@ -79,15 +79,21 @@ void QtOpenCVDepthmap::fetch_frame(int index) {
         feed_src >> frame_src;
         ui->sbs_view->showImage(frame_src);
 
-        //compute depth map with current settings and display it
-        left_eye = frame_src.colRange(0, split_width);
-        right_eye = frame_src.colRange(split_width, input_width);
-        mapper(left_eye, right_eye, frame_dst_16_gray);
-        //the disparity mapper outputs CV_16UC1 when we need it in CV_8UC1
-        frame_dst_16_gray.convertTo(frame_dst_8_gray, CV_8UC1);
-        cvtColor(frame_dst_8_gray, frame_dst_8_colour, CV_GRAY2RGB);
-        ui->depth_view->showImage(frame_dst_8_colour);
+        update_depthmap();
     }
+}
+
+void QtOpenCVDepthmap::update_depthmap() {
+    //compute depth map with current settings and display it
+    left_eye = frame_src.colRange(0, split_width);
+    right_eye = frame_src.colRange(split_width, input_width);
+    mapper(left_eye, right_eye, frame_dst_16_gray);
+    //the disparity mapper outputs CV_16UC1 when we need it in CV_8UC1
+    frame_dst_16_gray.convertTo(frame_dst_8_gray, CV_8UC1);
+    cvtColor(frame_dst_8_gray, frame_dst_8_colour, CV_GRAY2RGB);
+
+    //display depthmap frame
+    ui->depth_view->showImage(frame_dst_8_colour);
 }
 
 void QtOpenCVDepthmap::on_actionOpen_triggered()
@@ -98,52 +104,54 @@ void QtOpenCVDepthmap::on_actionOpen_triggered()
 
 void QtOpenCVDepthmap::on_input_minDisparity_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::MIN_DISPARITY, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_numDisparities_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::NUM_DISPARITIES, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_SADWindowSize_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::SAD_WINDOW_SIZE, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_P1_valueChanged(int arg1)
 {
-
+    //if return value is true, have to check both p1 and p2
+    update_mapper_value<int>(Arguments::P1, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_P2_valueChanged(int arg1)
 {
-
+    //if return value is true, have to check both p1 and p2
+    update_mapper_value<int>(Arguments::P2, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_disp12MAxDiff_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::DISP12_MAX_DIFF, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_preFilterCap_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::PRE_FILTER_CAP, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_uniqunessRatio_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::UNIQUENESS, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_speckleWindowSize_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::SPECKLE_WINDOW_SIZE, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_speckleRange_valueChanged(int arg1)
 {
-
+    update_mapper_value<int>(Arguments::SPECKLE_RANGE, arg1);
 }
 
 void QtOpenCVDepthmap::on_input_fullDP_stateChanged(int arg1)
@@ -154,6 +162,7 @@ void QtOpenCVDepthmap::on_input_fullDP_stateChanged(int arg1)
      Qt::PartiallyChecked   1   The item is partially checked. Items in hierarchical models may be partially checked if some, but not all, of their children are checked.
      Qt::Checked            2   The item is checked.
     */
+    update_mapper_value<bool>(Arguments::FULL_DP, (arg1 != 0) );
 }
 
 void QtOpenCVDepthmap::on_horizontalSlider_valueChanged(int frame_index)

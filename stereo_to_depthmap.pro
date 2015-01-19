@@ -14,7 +14,7 @@ release: TARGET = stereo_to_depthmap
 
 TEMPLATE = app
 
-LIBPATH += /usr/lib/x86_64-linux-gnu
+QMAKE_LIBDIR += /usr/lib/x86_64-linux-gnu
 
 LIBS     += -lm -lz -lpthread -lavformat -lavcodec -lavutil -lopencv_core -lopencv_calib3d -lopencv_highgui -lopencv_imgproc -lopencv_video -lopencv_objdetect
 

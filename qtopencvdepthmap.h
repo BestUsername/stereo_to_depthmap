@@ -23,6 +23,34 @@ class QtOpenCVDepthmap : public QMainWindow
         void args_to_mapper();
         void open_filename(const std::string& filename);
         void fetch_frame(int index);
+        void update_depthmap();
+
+        template<typename Val>
+        bool update_mapper_value(Arguments::Arg arg, Val val) {
+            bool req_update = false;
+            //get the current value
+            Val previous = arguments.get_value<Val>(arg);
+            //attempt to set the value
+            arguments.set_value<Val>(arg, val);
+            //test if value is valid. If not, attempt to rectify it
+            if (!arguments.is_valid(arg, true)) {
+                //wasn't able to correct the setting. Convert back to old value;
+                arguments.set_value<Val>(arg, previous);
+            }
+            Val current = arguments.get_value<Val>(arg);
+            //if our current value is different than the supplied value, then we need to update the gui controls
+            if (val != current) {
+                //this shouldn't happen as the inputs are already configured with ranges and step values
+                req_update = true;
+            }
+            //only update depthmap if it changed.
+            if (arguments.get_value<Val>(arg) != previous) {
+                args_to_mapper();
+                update_depthmap();
+            }
+            return req_update;
+        }
+
 
     private slots:
         void on_actionOpen_triggered();
