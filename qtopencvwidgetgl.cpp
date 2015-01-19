@@ -106,7 +106,7 @@ void QtOpenCVWidgetGL::renderImage()
             else
                 image = mRenderQtImg;
 
-            // ---> Centering image in draw area            
+            // ---> Centering image in draw area
 
             glRasterPos2i( mPosX, mPosY );
             // <--- Centering image in draw area

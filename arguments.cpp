@@ -7,7 +7,7 @@
 
 Arguments::Arguments() {
     output_filename_default = "output.avi";
-	reset();
+    reset();
 }
 
 Arguments::~Arguments() {
@@ -15,22 +15,22 @@ Arguments::~Arguments() {
 
 void Arguments::reset() {
     g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
-	verbose = false;
-	nogui = false;
-	output_fourcc = CV_FOURCC_DEFAULT;
+    verbose = false;
+    nogui = false;
+    output_fourcc = CV_FOURCC_DEFAULT;
     input_filename = "";
     output_filename = output_filename_default;
-	num_disparities = 16;
-	SAD_window_size = 15;
-	min_disparity = 0;
-	pre_filter_cap = 0;
-	uniqueness = 0;
-	p1 = 0;
-	p2 = 0;
-	disp12_max_diff = 0;
-	speckle_window_size = 0;
-	speckle_range = 0;
-	full_dp = false;
+    num_disparities = 16;
+    SAD_window_size = 15;
+    min_disparity = 0;
+    pre_filter_cap = 0;
+    uniqueness = 0;
+    p1 = 0;
+    p2 = 0;
+    disp12_max_diff = 0;
+    speckle_window_size = 0;
+    speckle_range = 0;
+    full_dp = false;
     g_args_mutex.unlock();
 }
 
