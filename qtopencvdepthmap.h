@@ -21,12 +21,12 @@ class QtOpenCVDepthmap : public QMainWindow
         ~QtOpenCVDepthmap();
 
         void args_to_mapper();
-        void open_filename(const std::string& filename);
+        void open_filename(const std::string &filename);
         void fetch_frame(int index);
         void update_depthmap();
 
         template<typename Val>
-        bool update_mapper_value(Arguments::Arg arg, Val val) {
+        bool update_mapper_value(const Arguments::Arg &arg, const Val &val) {
             bool req_update = false;
             //get the current value
             Val previous = arguments.get_value<Val>(arg);

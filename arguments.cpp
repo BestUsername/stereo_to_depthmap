@@ -44,7 +44,7 @@ bool Arguments::is_valid(bool correct) {
     return !invalid;
 }
 
-bool Arguments::is_valid(Arg arg, bool correct) {
+bool Arguments::is_valid(const Arg &arg, bool correct) {
     /*
      rules:
      *) verbose and full_dp are boolean and independent - so no validation

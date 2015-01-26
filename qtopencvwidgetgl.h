@@ -14,7 +14,7 @@ class QtOpenCVWidgetGL : public QGLWidget
         void    imageSizeChanged( int outW, int outH ); /// Used to resize the image outside the widget
 
     public slots:
-        bool    showImage( cv::Mat image ); /// Used to set the image to be viewed
+        bool    showImage( const cv::Mat &image ); /// Used to set the image to be viewed
 
     protected:
         void 	initializeGL(); /// OpenGL initialization

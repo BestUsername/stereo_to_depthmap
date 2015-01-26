@@ -123,7 +123,7 @@ void QtOpenCVWidgetGL::renderImage()
     }
 }
 
-bool QtOpenCVWidgetGL::showImage( cv::Mat image )
+bool QtOpenCVWidgetGL::showImage( const cv::Mat &image )
 {
     image.copyTo(mOrigImage);
 

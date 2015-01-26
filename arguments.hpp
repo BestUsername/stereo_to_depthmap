@@ -49,12 +49,12 @@ class Arguments
 
         void reset();
         bool is_valid(bool correct = false);
-        bool is_valid(Arg arg, bool correct = false);
+        bool is_valid(const Arg &arg, bool correct = false);
 
 
 
         template <typename Val>
-        void set_value(Arg key, Val value) {
+        void set_value(const Arg &key, const Val &value) {
             g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
             switch(key) {
                 case VERBOSE:
@@ -118,7 +118,7 @@ class Arguments
         }
 
         template <typename T>
-        T get_value(Arg key) {
+        T get_value(const Arg &key) const {
             g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
             T retval;
             switch(key) {
@@ -180,7 +180,7 @@ class Arguments
 
     private:
         template <typename Val>
-        void try_set_fourcc(Val& value) {
+        void try_set_fourcc(const Val &value) {
 
             //lambda to check if a specific character is valid for fourcc input
             auto is_fourcc_char = [](char character) {
@@ -206,7 +206,7 @@ class Arguments
         }
 
         template <typename Var, typename Val>
-        void try_set(Var& var, Val& val) {
+        void try_set(Var &var, const Val &val) const {
             if (std::is_same<Var, Val>::value) {
                 var = (Var&)(val);
             } else {
