@@ -87,7 +87,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox_3"/>
+         <widget class="QSpinBox" name="spinBox_current_frame"/>
         </item>
         <item>
          <widget class="QLabel" name="label_total_frames">
@@ -412,6 +412,38 @@
    <hints>
     <hint type="sourcelabel">
      <x>990</x>
+     <y>373</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>514</x>
+     <y>261</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_current_frame</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>514</x>
+     <y>261</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>542</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_current_frame</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>542</x>
      <y>373</y>
     </hint>
     <hint type="destinationlabel">
