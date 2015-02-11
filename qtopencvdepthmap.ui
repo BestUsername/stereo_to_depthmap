@@ -61,6 +61,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="spinBox_clip_start">
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -91,6 +94,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="spinBox_current_frame">
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -128,6 +134,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="spinBox_clip_end">
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -396,8 +405,8 @@
   <connection>
    <sender>spinBox_clip_start</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>horizontalSlider</receiver>
-   <slot>sub_range_start_changed(int)</slot>
+   <receiver>QtOpenCVDepthmap</receiver>
+   <slot>check_start_frame(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>109</x>
@@ -405,15 +414,15 @@
     </hint>
     <hint type="destinationlabel">
      <x>514</x>
-     <y>261</y>
+     <y>433</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>spinBox_clip_end</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>horizontalSlider</receiver>
-   <slot>sub_range_end_changed(int)</slot>
+   <receiver>QtOpenCVDepthmap</receiver>
+   <slot>check_end_frame(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>990</x>
@@ -421,31 +430,31 @@
     </hint>
     <hint type="destinationlabel">
      <x>514</x>
-     <y>261</y>
+     <y>433</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>horizontalSlider</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>spinBox_current_frame</receiver>
-   <slot>setValue(int)</slot>
+   <receiver>QtOpenCVDepthmap</receiver>
+   <slot>check_current_frame(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>514</x>
      <y>261</y>
     </hint>
     <hint type="destinationlabel">
-     <x>542</x>
-     <y>373</y>
+     <x>514</x>
+     <y>433</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>spinBox_current_frame</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>horizontalSlider</receiver>
-   <slot>setValue(int)</slot>
+   <receiver>QtOpenCVDepthmap</receiver>
+   <slot>check_current_frame(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>542</x>
@@ -453,9 +462,14 @@
     </hint>
     <hint type="destinationlabel">
      <x>514</x>
-     <y>261</y>
+     <y>433</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>check_start_frame(int)</slot>
+  <slot>check_end_frame(int)</slot>
+  <slot>check_current_frame(int)</slot>
+ </slots>
 </ui>

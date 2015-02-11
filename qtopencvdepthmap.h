@@ -51,6 +51,14 @@ class QtOpenCVDepthmap : public QMainWindow
             return req_update;
         }
 
+        template<typename T>
+        void correct_range(T& value, T min, T max);
+
+    public slots:
+
+        void check_end_frame(int value);
+        void check_start_frame(int value);
+        void check_current_frame(int value);
 
     private slots:
         void on_actionOpen_triggered();

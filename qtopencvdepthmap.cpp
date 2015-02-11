@@ -183,3 +183,45 @@ void QtOpenCVDepthmap::on_horizontalSlider_valueChanged(int frame_index)
         fetch_frame(frame_index);
     }
 }
+
+//function to force a value into a range (inclusive)
+template<typename T>
+void QtOpenCVDepthmap::correct_range(T& value, T min, T max) {
+    value = std::min(std::max(value, min), max);
+}
+
+void QtOpenCVDepthmap::check_end_frame(int value) {
+    int start_frame = ui->spinBox_clip_start->value();
+
+    int end_frame = value;
+    correct_range(end_frame, start_frame, (int)input_frame_count);
+
+    ui->horizontalSlider->sub_range_end_changed(end_frame);
+    ui->spinBox_clip_end->setValue(end_frame);
+}
+
+void QtOpenCVDepthmap::check_start_frame(int value) {
+    int end_frame = ui->spinBox_clip_end->value();
+
+    int start_frame = value;
+    correct_range(start_frame, 1, end_frame);
+
+    ui->horizontalSlider->sub_range_start_changed(start_frame);
+    ui->spinBox_clip_start->setValue(start_frame);
+}
+
+void QtOpenCVDepthmap::check_current_frame(int value) {
+    int original_spin = ui->spinBox_current_frame->value();
+    int original_slider = ui->horizontalSlider->value();
+
+    int current_frame = value;
+    correct_range(current_frame, 1, (int)input_frame_count);
+
+    if (current_frame != original_spin) {
+        ui->spinBox_current_frame->setValue(current_frame);
+    }
+    if (current_frame != original_slider) {
+        ui->horizontalSlider->setValue(current_frame);
+    }
+
+}
