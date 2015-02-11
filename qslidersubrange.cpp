@@ -7,7 +7,7 @@ QSliderSubRange::QSliderSubRange(QWidget *parent) :
     QSlider(parent)
 {
     sub_range_start_frame = 0;
-    sub_range_end_frame = 100;
+    sub_range_end_frame = 1;
     sub_range_vert_thickness = 5;
     sub_range_colour = Qt::blue;
 }
