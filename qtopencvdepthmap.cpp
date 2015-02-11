@@ -61,19 +61,19 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         output_fps = input_fps;
 
         //set scrubber range
-        ui->horizontalSlider->setRange(0, input_frame_count);
+        ui->horizontalSlider->setRange(1, input_frame_count);
         //set spinbox ranges
         ui->spinBox_clip_start->setMaximum(input_frame_count);
         ui->spinBox_clip_end->setMaximum(input_frame_count);
         ui->spinBox_current_frame->setMaximum(input_frame_count);
         //set position defaults
-        ui->horizontalSlider->setSliderPosition(0);
-        ui->spinBox_current_frame->setValue(0);
-        ui->spinBox_clip_start->setValue(0);
+        ui->horizontalSlider->setSliderPosition(1);
+        ui->spinBox_current_frame->setValue(1);
+        ui->spinBox_clip_start->setValue(1);
         ui->spinBox_clip_end->setValue(input_frame_count);
         ui->label_total_frames->setText(QString::number(input_frame_count));
 
-        fetch_frame(0);
+        fetch_frame(1);
     } else {
         QMessageBox msgBox;
         msgBox.setText(QString::fromStdString(filename) + " could not be opened for reading.");
@@ -82,10 +82,11 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
     }
 }
 
+//Input is 1-indexed
 void QtOpenCVDepthmap::fetch_frame(int index) {
     if (is_active) {
-        //fetch and display source frame
-        feed_src.set(CV_CAP_PROP_POS_FRAMES, index);
+        //fetch and display source frame (0-indexed)
+        feed_src.set(CV_CAP_PROP_POS_FRAMES, index-1);
         feed_src >> frame_src;
         ui->sbs_view->showImage(frame_src);
 

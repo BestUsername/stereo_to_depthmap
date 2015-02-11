@@ -34,7 +34,7 @@
       <item>
        <widget class="QSliderSubRange" name="horizontalSlider">
         <property name="minimum">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="maximum">
          <number>100</number>
@@ -61,6 +61,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="spinBox_clip_start">
+          <property name="minimum">
+           <number>1</number>
+          </property>
           <property name="maximum">
            <number>100</number>
           </property>
@@ -87,7 +90,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox_current_frame"/>
+         <widget class="QSpinBox" name="spinBox_current_frame">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_total_frames">
@@ -118,6 +125,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="spinBox_clip_end">
+          <property name="minimum">
+           <number>1</number>
+          </property>
           <property name="maximum">
            <number>100</number>
           </property>
