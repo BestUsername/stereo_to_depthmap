@@ -60,8 +60,18 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         output_height = input_height;
         output_fps = input_fps;
 
+        //set scrubber range
         ui->horizontalSlider->setRange(0, input_frame_count);
+        //set spinbox ranges
+        ui->spinBox_clip_start->setMaximum(input_frame_count);
+        ui->spinBox_clip_end->setMaximum(input_frame_count);
+        ui->spinBox_current_frame->setMaximum(input_frame_count);
+        //set position defaults
         ui->horizontalSlider->setSliderPosition(0);
+        ui->spinBox_current_frame->setValue(0);
+        ui->spinBox_clip_start->setValue(0);
+        ui->spinBox_clip_end->setValue(input_frame_count);
+        ui->label_total_frames->setText(QString::number(input_frame_count));
 
         fetch_frame(0);
     } else {
