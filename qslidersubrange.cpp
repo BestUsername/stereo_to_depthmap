@@ -14,9 +14,9 @@ QSliderSubRange::QSliderSubRange(QWidget *parent) :
 
 void QSliderSubRange::paintEvent(QPaintEvent *event) {
     //guarantee we don't div/0
-    int temp_max = std::max(this->maximum(), 1);
+    double temp_max = std::max(this->maximum(), 1);
     double sub_range_start_ratio = sub_range_start_frame / temp_max;
-    double sub_range_end_ratio = sub_range_end_frame / temp_max;
+    double sub_range_width_ratio = (sub_range_end_frame - sub_range_start_frame) / temp_max;
 
     QStyleOptionSlider opt;
     initStyleOption(&opt);
@@ -28,7 +28,7 @@ void QSliderSubRange::paintEvent(QPaintEvent *event) {
 
     QRect groove_rect = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderGroove, this);
     //qDebug() << groove_rect;
-    QRect rect(groove_rect.left() + sub_range_start_ratio * groove_rect.width(), groove_rect.top() - sub_range_vert_thickness, sub_range_end_ratio * groove_rect.width(), groove_rect.height() + 2*sub_range_vert_thickness);
+    QRect rect(groove_rect.left() + sub_range_start_ratio * groove_rect.width(), groove_rect.top() - sub_range_vert_thickness, sub_range_width_ratio * groove_rect.width(), groove_rect.height() + 2*sub_range_vert_thickness);
     QPainter painter(this);
     painter.fillRect(rect, QBrush(sub_range_colour));
     QSlider::paintEvent(event);
@@ -37,8 +37,10 @@ void QSliderSubRange::paintEvent(QPaintEvent *event) {
 
 void QSliderSubRange::sub_range_start_changed(int value) {
     sub_range_start_frame = value;
+    this->update();
 }
 
 void QSliderSubRange::sub_range_end_changed(int value) {
     sub_range_end_frame = value;
+    this->update();
 }
