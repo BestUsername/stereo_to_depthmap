@@ -21,11 +21,15 @@ LIBS     += -lm -lz -lpthread -lavformat -lavcodec -lavutil -lopencv_core -lopen
 SOURCES += main.cpp\
            arguments.cpp\
 		   qtopencvwidgetgl.cpp\
-		   qtopencvdepthmap.cpp
+		   qtopencvdepthmap.cpp \
+    processor.cpp \
+    qslidersubrange.cpp
 
 HEADERS  += arguments.hpp\
 			qtopencvwidgetgl.h\
-			qtopencvdepthmap.h
+			qtopencvdepthmap.h \
+    processor.h \
+    qslidersubrange.h
 
 FORMS    += qtopencvdepthmap.ui
 
