@@ -49,7 +49,8 @@ void QtOpenCVDepthmap::set_active(bool isActive) {
     ui->spinBox_clip_start->setEnabled(is_active);
     ui->spinBox_current_frame->setEnabled(is_active);
     ui->spinBox_clip_end->setEnabled(is_active);
-    //TODO: enable/disable menu actions
+    //set menu actions enabled/disabled
+    ui->actionExport->setEnabled(is_active);
 }
 
 void QtOpenCVDepthmap::args_to_mapper() {
