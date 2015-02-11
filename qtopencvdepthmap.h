@@ -90,7 +90,9 @@ class QtOpenCVDepthmap : public QMainWindow
         void on_horizontalSlider_valueChanged(int value);
 
 
-    private:
+        void on_actionQuit_triggered();
+
+private:
         Arguments& arguments;
 
         Ui::QtOpenCVDepthmap *ui;

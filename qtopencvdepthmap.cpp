@@ -250,3 +250,8 @@ void QtOpenCVDepthmap::check_current_frame(int value) {
     }
 
 }
+
+void QtOpenCVDepthmap::on_actionQuit_triggered()
+{
+    this->close();
+}
