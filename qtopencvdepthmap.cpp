@@ -10,11 +10,14 @@
 QtOpenCVDepthmap::QtOpenCVDepthmap(Arguments& args, QWidget *parent) :
     QMainWindow(parent),
     arguments(args),
-    ui(new Ui::QtOpenCVDepthmap),
-    is_active(false)
+    ui(new Ui::QtOpenCVDepthmap)
 {
+
     args_to_mapper();
     ui->setupUi(this);
+
+    set_active(false);
+
     std::string input = arguments.get_value<std::string>(Arguments::INPUT_FILENAME);
 
     if (!input.empty()) {
@@ -25,6 +28,28 @@ QtOpenCVDepthmap::QtOpenCVDepthmap(Arguments& args, QWidget *parent) :
 QtOpenCVDepthmap::~QtOpenCVDepthmap()
 {
     delete ui;
+}
+
+void QtOpenCVDepthmap::set_active(bool isActive) {
+    is_active = isActive;
+    //set disparity inputs enabled/disabled
+    ui->input_minDisparity->setEnabled(is_active);
+    ui->input_numDisparities->setEnabled(is_active);
+    ui->input_SADWindowSize->setEnabled(is_active);
+    ui->input_P1->setEnabled(is_active);
+    ui->input_P2->setEnabled(is_active);
+    ui->input_disp12MAxDiff->setEnabled(is_active);
+    ui->input_preFilterCap->setEnabled(is_active);
+    ui->input_uniqunessRatio->setEnabled(is_active);
+    ui->input_speckleWindowSize->setEnabled(is_active);
+    ui->input_speckleRange->setEnabled(is_active);
+    ui->input_fullDP->setEnabled(is_active);
+    //set position inputs enabled/disabled
+    ui->horizontalSlider->setEnabled(is_active);
+    ui->spinBox_clip_start->setEnabled(is_active);
+    ui->spinBox_current_frame->setEnabled(is_active);
+    ui->spinBox_clip_end->setEnabled(is_active);
+    //TODO: enable/disable menu actions
 }
 
 void QtOpenCVDepthmap::args_to_mapper() {
@@ -44,7 +69,7 @@ void QtOpenCVDepthmap::args_to_mapper() {
 void QtOpenCVDepthmap::open_filename(const std::string& filename) {
     feed_src.open(filename);
     if (feed_src.isOpened()) {
-        is_active = true;
+        set_active(true);
         arguments.set_value(Arguments::INPUT_FILENAME, filename);
 
         current_pos_msec = feed_src.get(CV_CAP_PROP_POS_MSEC);

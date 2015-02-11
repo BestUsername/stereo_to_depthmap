@@ -20,6 +20,8 @@ class QtOpenCVDepthmap : public QMainWindow
         explicit QtOpenCVDepthmap(Arguments& args, QWidget *parent = 0);
         ~QtOpenCVDepthmap();
 
+        void set_active(bool isActive);
+
         void args_to_mapper();
         void open_filename(const std::string &filename);
         void fetch_frame(int index);
