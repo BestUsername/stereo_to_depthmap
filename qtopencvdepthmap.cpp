@@ -136,7 +136,9 @@ void QtOpenCVDepthmap::update_depthmap() {
 void QtOpenCVDepthmap::on_actionOpen_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open Video"), "", tr("Video Files (*.avi *.mpg *.mp4);;All Files (*.*)"));
-    open_filename(filename.toStdString());
+    if (!filename.isNull()) {
+        open_filename(filename.toStdString());
+    }
 }
 
 void QtOpenCVDepthmap::on_input_minDisparity_valueChanged(int arg1)
