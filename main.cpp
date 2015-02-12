@@ -10,6 +10,7 @@
 #include <iostream> //cerr
 
 #include "arguments.hpp"
+#include "processor.h"
 #include "qtopencvdepthmap.h"
 
 const char* argp_program_version = "stereo_to_depthmap 0.1";
@@ -148,6 +149,8 @@ static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
 
 int main( int argc, char** argv ) {
+    int retval = EXIT_SUCCESS;
+
     //constructor initializes
     Arguments arguments;
     //parse arguments
@@ -159,99 +162,45 @@ int main( int argc, char** argv ) {
             std::cerr << "Settings corrected. Continuing" << std::endl;
         } else {
             std::cerr << "Cannot correct settings. Exiting" << std::endl;
-            return EXIT_FAILURE;
+            retval = EXIT_FAILURE;
         }
     }
 
-    if (arguments.get_value<bool>(Arguments::NOGUI)) {
-        cv::VideoCapture feed_src; //source video feed
-        cv::VideoWriter  feed_dst; //destination video feed
-        double input_width, split_width, input_height, input_fps, output_width, output_height, output_fps;
-        //open iostreams and set dimension variables
-        {
-            bool valid = true;
+    if (EXIT_SUCCESS == retval) {
+        if (arguments.get_value<bool>(Arguments::NOGUI)) {
+            cv::VideoCapture feed_src; //source video feed
 
-            std::string input_filename = arguments.get_value<std::string>(Arguments::INPUT_FILENAME);
-            std::string output_filename = arguments.get_value<std::string>(Arguments::OUTPUT_FILENAME);
-            int output_fourcc = arguments.get_value<int>(Arguments::OUTPUT_FOURCC);
+                std::string input_filename = arguments.get_value<std::string>(Arguments::INPUT_FILENAME);
+                feed_src.open(input_filename);
+                if (!feed_src.isOpened()) {
+                    std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
+                    retval = EXIT_FAILURE;
+                } else {
+                    Processor::process_clip(feed_src, arguments);
 
-            feed_src.open(input_filename);
-            if (!feed_src.isOpened()) {
-                std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
-                valid = false;
-            } else {
-                input_width = feed_src.get(CV_CAP_PROP_FRAME_WIDTH);
-                input_height = feed_src.get(CV_CAP_PROP_FRAME_HEIGHT);
-                input_fps = feed_src.get(CV_CAP_PROP_FPS);
-                split_width = input_width * 0.5;
-
-                output_width = split_width;
-                output_height = input_height;
-                output_fps = input_fps;
-
-                feed_dst.open(output_filename, output_fourcc, output_fps, cv::Size(output_width, output_height), true);
-                if (!feed_dst.isOpened()) {
-                    std::cerr << "ERROR:\tOutput file [" << output_filename << "] cannot be opened for writing" << std::endl;
-                    valid = false;
                 }
+        } else {
+
+            int res=-1;
+
+            try {
+                QApplication a(argc, argv);
+                QtOpenCVDepthmap w(arguments, 0);
+                w.show();
+
+                res = a.exec();
             }
-            if (!valid) {
-                return EXIT_FAILURE;
+            catch(QException &e) {
+                qCritical() << QString("Exception: %1").arg( e.what() );
             }
+            catch(...) {
+                qCritical() << QString("Unhandled Exception");
+            }
+
+            retval = res == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
         }
-        cv::Mat frame_src, left_eye, right_eye, frame_dst_16_gray, frame_dst_8_gray, frame_dst_8_colour;
-
-        int min_disparity       = arguments.get_value<int>  (Arguments::MIN_DISPARITY);
-        int num_disparities     = arguments.get_value<int>  (Arguments::NUM_DISPARITIES);
-        int SAD_window_size     = arguments.get_value<int>  (Arguments::SAD_WINDOW_SIZE);
-        int p1                  = arguments.get_value<int>  (Arguments::P1);
-        int p2                  = arguments.get_value<int>  (Arguments::P2);
-        int disp12_max_diff     = arguments.get_value<int>  (Arguments::DISP12_MAX_DIFF);
-        int pre_filter_cap      = arguments.get_value<int>  (Arguments::PRE_FILTER_CAP);
-        int uniqueness          = arguments.get_value<int>  (Arguments::UNIQUENESS);
-        int speckle_window_size = arguments.get_value<int>  (Arguments::SPECKLE_WINDOW_SIZE);
-        int speckle_range       = arguments.get_value<int>  (Arguments::SPECKLE_RANGE);
-        bool full_dp            = arguments.get_value<bool> (Arguments::FULL_DP);
-        cv::StereoSGBM mapper(min_disparity, num_disparities, SAD_window_size,
-                              p1, p2, disp12_max_diff, pre_filter_cap,
-                              uniqueness, speckle_window_size, speckle_range,
-                              full_dp);
-
-        //init first frame from VideoCapture
-        //loop while there's current video frame data and nothing has been pressed
-        //step prep next frame
-        for (feed_src >> frame_src; frame_src.data && (cv::waitKey(33) < 0); feed_src >> frame_src) {
-            left_eye = frame_src.colRange(0, split_width);
-            right_eye = frame_src.colRange(split_width, input_width);
-
-            mapper(left_eye, right_eye, frame_dst_16_gray);
-
-            //the disparity mapper outputs CV_16UC1 when we need it in CV_8UC1
-            frame_dst_16_gray.convertTo(frame_dst_8_gray, CV_8UC1);
-            cvtColor(frame_dst_8_gray, frame_dst_8_colour, CV_GRAY2RGB);
-            feed_dst << frame_dst_8_colour;
-        }
-    } else {
-
-        int res=-1;
-
-        try {
-            QApplication a(argc, argv);
-            QtOpenCVDepthmap w(arguments, 0);
-            w.show();
-
-            res = a.exec();
-        }
-        catch(QException &e) {
-            qCritical() << QString("Exception: %1").arg( e.what() );
-        }
-        catch(...) {
-            qCritical() << QString("Unhandled Exception");
-        }
-
-        return res;
     }
 
-    return EXIT_SUCCESS;
+    return retval;
 }
 
