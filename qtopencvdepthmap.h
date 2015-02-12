@@ -94,6 +94,8 @@ class QtOpenCVDepthmap : public QMainWindow
 
         void on_actionQuit_triggered();
 
+        void on_actionExport_triggered();
+
 private:
         Arguments& arguments;
 

@@ -4,6 +4,7 @@
 
 #include "opencv2/imgproc/imgproc.hpp"
 
+#include "processor.h"
 #include "qtopencvdepthmap.h"
 #include "ui_qtopencvdepthmap.h"
 
@@ -271,4 +272,16 @@ void QtOpenCVDepthmap::check_current_frame(int value) {
 void QtOpenCVDepthmap::on_actionQuit_triggered()
 {
     this->close();
+}
+
+void QtOpenCVDepthmap::on_actionExport_triggered()
+{
+    std::string output_filename = arguments.get_value<std::string>(Arguments::OUTPUT_FILENAME);
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Video"), output_filename.c_str(), tr("Video Files (*.avi *.mpg *.mp4);;All Files (*.*)"));
+    if (!filename.isNull()) {
+        if (filename.toStdString() != output_filename) {
+            arguments.set_value<std::string>(Arguments::OUTPUT_FILENAME, filename.toStdString());
+        }
+        Processor::process_clip(feed_src, arguments);
+    }
 }
