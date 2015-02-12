@@ -86,6 +86,13 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         output_height = input_height;
         output_fps = input_fps;
 
+        int start_frame = arguments.get_value<int>(Arguments::START_FRAME);
+        start_frame = std::max(1,start_frame);
+        int end_frame = arguments.get_value<int>(Arguments::END_FRAME);
+        if (end_frame <= 0) {
+            end_frame = input_frame_count;
+        }
+
         //set scrubber range
         ui->horizontalSlider->setRange(1, input_frame_count);
         //set spinbox ranges
@@ -95,11 +102,11 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         //set position defaults
         ui->horizontalSlider->setSliderPosition(1);
         ui->spinBox_current_frame->setValue(1);
-        ui->spinBox_clip_start->setValue(1);
-        ui->spinBox_clip_end->setValue(input_frame_count);
+        ui->spinBox_clip_start->setValue(start_frame);
+        ui->spinBox_clip_end->setValue(end_frame);
         ui->label_total_frames->setText(QString::number(input_frame_count));
 
-        fetch_frame(1);
+        fetch_frame(start_frame);
     } else {
         QMessageBox msgBox;
         msgBox.setText(QString::fromStdString(filename) + " could not be opened for reading.");
@@ -224,6 +231,8 @@ void QtOpenCVDepthmap::check_end_frame(int value) {
     int end_frame = value;
     correct_range(end_frame, start_frame, (int)input_frame_count);
 
+    //update_mapper_value<int>(Arguments::END_FRAME, value);
+
     ui->horizontalSlider->sub_range_end_changed(end_frame);
     ui->spinBox_clip_end->setValue(end_frame);
 }
@@ -233,6 +242,8 @@ void QtOpenCVDepthmap::check_start_frame(int value) {
 
     int start_frame = value;
     correct_range(start_frame, 1, end_frame);
+
+    //update_mapper_value<int>(Arguments::START_FRAME, value);
 
     ui->horizontalSlider->sub_range_start_changed(start_frame);
     ui->spinBox_clip_start->setValue(start_frame);

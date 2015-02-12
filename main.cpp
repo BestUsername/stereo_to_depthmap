@@ -27,6 +27,8 @@ static struct argp_option options[] =
 {"fourcc"           ,    'f',    "CODE", 0,                                                   "Four lettercode for the output codec. Default IYUV.", 1},
 {"infile"           ,    'i',  "INFILE", 0,                               "The video file to read from. Currently required for headless operation.", 1},
 {"outfile"          ,    'o', "OUTFILE", 0,                                                   "The video file to write out to. Default output.avi.", 1},
+{"startFrame"       ,    's',   "INDEX", 0,                                               "Optional starting frame for clip processing. Default 0.", 1},
+{"endFrame"         ,    'e',   "INDEX", 0,                                                 "Optional ending frame for clip processing. Default 0.", 1},
 {"disparity"        ,    'd',   "VALUE", 0,                           "Number of pixels to search across. Needs to be divisible by 16. Default 16.", 2},
 {"window"           ,    'w',   "VALUE", 0,                                  "Dimension of window to compare against. Needs to be odd. Default 15.", 2},
 {"minDisparity"     ,    'm',   "VALUE", 0,                                                               "Minimum disparity allowable. Default 0.", 3},
@@ -59,7 +61,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
         case 'c': //nogui
             arguments->set_value<bool>(Arguments::NOGUI, true);
             break;
-            //group 1 - input/output
+
+        //group 1 - input/output
         case 'f': //fourcc
             arguments->set_value<std::string>(Arguments::OUTPUT_FOURCC, std::string(arg));
             break;
@@ -69,7 +72,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
         case 'o': //outfile
             arguments->set_value<std::string>(Arguments::OUTPUT_FILENAME, std::string(arg));
             break;
-            //group 2 - information shared between StereoSGBM and StereoBM
+        case 's': //starting frame number
+            arguments->set_value<int>(Arguments::START_FRAME, std::stoi(arg));
+            break;
+        case 'e': //ending frame number
+            arguments->set_value<int>(Arguments::END_FRAME, std::stoi(arg));
+            break;
+
+        //group 2 - information shared between StereoSGBM and StereoBM
         case 'd': //disparity
             arguments->set_value<int>(Arguments::NUM_DISPARITIES, std::stoi(arg));
             break;

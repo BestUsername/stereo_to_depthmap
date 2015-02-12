@@ -27,10 +27,12 @@ class Arguments
             DISP12_MAX_DIFF,
             SPECKLE_WINDOW_SIZE,
             SPECKLE_RANGE,
-            FULL_DP
+            FULL_DP,
+            START_FRAME,
+            END_FRAME
         };
 
-        const Arg arg_list[16] = {VERBOSE,
+        const Arg arg_list[18] = {VERBOSE,
                                   NOGUI,
                                   OUTPUT_FOURCC,
                                   INPUT_FILENAME,
@@ -45,7 +47,9 @@ class Arguments
                                   DISP12_MAX_DIFF,
                                   SPECKLE_WINDOW_SIZE,
                                   SPECKLE_RANGE,
-                                  FULL_DP};
+                                  FULL_DP,
+                                  START_FRAME,
+                                  END_FRAME};
 
         void reset();
         bool is_valid(bool correct = false);
@@ -110,6 +114,12 @@ class Arguments
                 case FULL_DP:
                     try_set<bool, Val>(full_dp, value);
                     break;
+                case START_FRAME:
+                    try_set<int, Val>(start_frame, value);
+                    break;
+                case END_FRAME:
+                    try_set<int, Val>(end_frame, value);
+                    break;
                 default:
                     throw std::range_error("Error: unknown key");
                     break;
@@ -169,6 +179,12 @@ class Arguments
                     break;
                 case FULL_DP:
                     try_set<T, bool>(retval, full_dp);
+                    break;
+                case START_FRAME:
+                    try_set<T, int>(retval, start_frame);
+                    break;
+                case END_FRAME:
+                    try_set<T, int>(retval, end_frame);
                     break;
                 default:
                     throw std::range_error("Error: unknown key");
@@ -231,6 +247,8 @@ class Arguments
         int speckle_window_size;
         int speckle_range;
         bool full_dp;
+        int start_frame;
+        int end_frame;
 };
 
 

@@ -31,6 +31,8 @@ void Arguments::reset() {
     speckle_window_size = 0;
     speckle_range = 0;
     full_dp = false;
+    start_frame = 0;
+    end_frame = 0;
     g_args_mutex.unlock();
 }
 
@@ -159,6 +161,14 @@ bool Arguments::is_valid(const Arg &arg, bool correct) {
             break;
         case SPECKLE_RANGE:
             geq(speckle_range, 0);
+            break;
+        case START_FRAME: //START_FRAME and END_FRAME have to be validated together
+        case END_FRAME:
+            geq(start_frame, 0);
+            geq(end_frame, 0);
+            if (end_frame != 0) {
+                geq(end_frame, start_frame);
+            }
             break;
         default:
             throw std::range_error("Error: Unknown variable index");
