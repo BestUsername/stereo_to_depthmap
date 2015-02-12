@@ -46,9 +46,11 @@ class QtOpenCVDepthmap : public QMainWindow
                 req_update = true;
             }
             //only update depthmap if it changed.
-            if (arguments.get_value<Val>(arg) != previous) {
+            if (current != previous) {
                 args_to_mapper();
-                update_depthmap();
+                if (is_active) {
+                    update_depthmap();
+                }
             }
             return req_update;
         }

@@ -31,26 +31,27 @@ QtOpenCVDepthmap::~QtOpenCVDepthmap()
 }
 
 void QtOpenCVDepthmap::set_active(bool isActive) {
-    is_active = isActive;
     //set disparity inputs enabled/disabled
-    ui->input_minDisparity->setEnabled(is_active);
-    ui->input_numDisparities->setEnabled(is_active);
-    ui->input_SADWindowSize->setEnabled(is_active);
-    ui->input_P1->setEnabled(is_active);
-    ui->input_P2->setEnabled(is_active);
-    ui->input_disp12MAxDiff->setEnabled(is_active);
-    ui->input_preFilterCap->setEnabled(is_active);
-    ui->input_uniqunessRatio->setEnabled(is_active);
-    ui->input_speckleWindowSize->setEnabled(is_active);
-    ui->input_speckleRange->setEnabled(is_active);
-    ui->input_fullDP->setEnabled(is_active);
+    ui->input_minDisparity->setEnabled(isActive);
+    ui->input_numDisparities->setEnabled(isActive);
+    ui->input_SADWindowSize->setEnabled(isActive);
+    ui->input_P1->setEnabled(isActive);
+    ui->input_P2->setEnabled(isActive);
+    ui->input_disp12MAxDiff->setEnabled(isActive);
+    ui->input_preFilterCap->setEnabled(isActive);
+    ui->input_uniqunessRatio->setEnabled(isActive);
+    ui->input_speckleWindowSize->setEnabled(isActive);
+    ui->input_speckleRange->setEnabled(isActive);
+    ui->input_fullDP->setEnabled(isActive);
     //set position inputs enabled/disabled
-    ui->horizontalSlider->setEnabled(is_active);
-    ui->spinBox_clip_start->setEnabled(is_active);
-    ui->spinBox_current_frame->setEnabled(is_active);
-    ui->spinBox_clip_end->setEnabled(is_active);
+    ui->horizontalSlider->setEnabled(isActive);
+    ui->spinBox_clip_start->setEnabled(isActive);
+    ui->spinBox_current_frame->setEnabled(isActive);
+    ui->spinBox_clip_end->setEnabled(isActive);
     //set menu actions enabled/disabled
-    ui->actionExport->setEnabled(is_active);
+    ui->actionExport->setEnabled(isActive);
+
+    is_active = isActive;
 }
 
 void QtOpenCVDepthmap::args_to_mapper() {
@@ -70,7 +71,6 @@ void QtOpenCVDepthmap::args_to_mapper() {
 void QtOpenCVDepthmap::open_filename(const std::string& filename) {
     feed_src.open(filename);
     if (feed_src.isOpened()) {
-        set_active(true);
         arguments.set_value(Arguments::INPUT_FILENAME, filename);
 
         current_pos_msec = feed_src.get(CV_CAP_PROP_POS_MSEC);
@@ -105,6 +105,9 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         ui->spinBox_clip_start->setValue(start_frame);
         ui->spinBox_clip_end->setValue(end_frame);
         ui->label_total_frames->setText(QString::number(input_frame_count));
+
+        //only set application as active after all settings have been loaded
+        set_active(true);
 
         fetch_frame(start_frame);
     } else {
@@ -231,7 +234,7 @@ void QtOpenCVDepthmap::check_end_frame(int value) {
     int end_frame = value;
     correct_range(end_frame, start_frame, (int)input_frame_count);
 
-    //update_mapper_value<int>(Arguments::END_FRAME, value);
+    update_mapper_value<int>(Arguments::END_FRAME, value);
 
     ui->horizontalSlider->sub_range_end_changed(end_frame);
     ui->spinBox_clip_end->setValue(end_frame);
@@ -243,7 +246,7 @@ void QtOpenCVDepthmap::check_start_frame(int value) {
     int start_frame = value;
     correct_range(start_frame, 1, end_frame);
 
-    //update_mapper_value<int>(Arguments::START_FRAME, value);
+    update_mapper_value<int>(Arguments::START_FRAME, value);
 
     ui->horizontalSlider->sub_range_start_changed(start_frame);
     ui->spinBox_clip_start->setValue(start_frame);
