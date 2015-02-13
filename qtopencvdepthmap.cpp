@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <QMessageBox>
 #include <iostream>
 
@@ -278,10 +279,30 @@ void QtOpenCVDepthmap::on_actionExport_triggered()
 {
     std::string output_filename = arguments.get_value<std::string>(Arguments::OUTPUT_FILENAME);
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Video"), output_filename.c_str(), tr("Video Files (*.avi *.mpg *.mp4);;All Files (*.*)"));
+
     if (!filename.isNull()) {
         if (filename.toStdString() != output_filename) {
             arguments.set_value<std::string>(Arguments::OUTPUT_FILENAME, filename.toStdString());
         }
-        Processor::process_clip(feed_src, arguments);
+
+        QString exportLabel = "Exporting ";
+        exportLabel.append(filename);
+
+        Processor processor(arguments, this->feed_src);
+        std::shared_ptr<cv::VideoWriter> output = processor.create_writer();
+
+        size_t start_frame = arguments.get_value<int>(Arguments::START_FRAME);
+        size_t end_frame   = arguments.get_value<int>(Arguments::END_FRAME);
+        size_t range = end_frame + 1 - start_frame;
+
+        //set up progress dialog
+        QProgressDialog progress(exportLabel, "Cancel", 0, range, this);
+        progress.setWindowModality(Qt::WindowModal);
+
+        for (size_t index = start_frame; index <= end_frame && !progress.wasCanceled(); ++index) {
+            progress.setValue(index - start_frame);
+            processor.process_frame(index, *output);
+        }
+        progress.setValue(range);
     }
 }

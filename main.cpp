@@ -176,8 +176,9 @@ int main( int argc, char** argv ) {
                     std::cerr << "ERROR:\tInput file [" << input_filename << "] cannot be opened for reading" << std::endl;
                     retval = EXIT_FAILURE;
                 } else {
-                    Processor::process_clip(feed_src, arguments);
-
+                    Processor processor(arguments, feed_src);
+                    std::shared_ptr<cv::VideoWriter> output = processor.create_writer();
+                    processor.process_clip(*output);
                 }
         } else {
 
