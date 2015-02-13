@@ -178,7 +178,19 @@ int main( int argc, char** argv ) {
                 } else {
                     Processor processor(arguments, feed_src);
                     std::shared_ptr<cv::VideoWriter> output = processor.create_writer();
-                    processor.process_clip(*output);
+
+                    size_t start_frame = arguments.get_value<int>(Arguments::START_FRAME);
+                    size_t end_frame   = arguments.get_value<int>(Arguments::END_FRAME);
+                    size_t range = end_frame + 1 - start_frame;
+
+                    size_t counter = 0;
+
+                    for (size_t index = start_frame; index <=end_frame; ++index) {
+                        ++counter;
+                        std::cout << "Processing frame " << counter << " of " << range << " [" << 100*counter/range << "%]\r" << std::flush;
+                        processor.process_frame(index, *output);
+                    }
+                    std::cout << std::endl;
                 }
         } else {
 
