@@ -53,13 +53,6 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLabel" name="label_clip_start">
-          <property name="text">
-           <string>Clip Start</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QSpinBox" name="spinBox_clip_start">
           <property name="keyboardTracking">
            <bool>false</bool>
@@ -69,6 +62,13 @@
           </property>
           <property name="maximum">
            <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_set_clip_start">
+          <property name="text">
+           <string>Clip Start</string>
           </property>
          </widget>
         </item>
@@ -126,7 +126,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="label_clip_end">
+         <widget class="QPushButton" name="button_set_clip_end">
           <property name="text">
            <string>Clip End</string>
           </property>

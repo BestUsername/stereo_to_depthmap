@@ -50,6 +50,14 @@ void QtOpenCVDepthmap::set_active(bool isActive) {
     ui->spinBox_clip_start->setEnabled(isActive);
     ui->spinBox_current_frame->setEnabled(isActive);
     ui->spinBox_clip_end->setEnabled(isActive);
+    //check_clip_buttons assumes active
+    if (isActive) {
+        check_clip_buttons();
+    } else {
+        ui->button_set_clip_start->setEnabled(false);
+        ui->button_set_clip_end->setEnabled(false);
+    }
+
     //set menu actions enabled/disabled
     ui->actionExport->setEnabled(isActive);
 
@@ -240,6 +248,7 @@ void QtOpenCVDepthmap::check_end_frame(int value) {
 
     ui->horizontalSlider->sub_range_end_changed(end_frame);
     ui->spinBox_clip_end->setValue(end_frame);
+    check_clip_buttons();
 }
 
 void QtOpenCVDepthmap::check_start_frame(int value) {
@@ -252,6 +261,7 @@ void QtOpenCVDepthmap::check_start_frame(int value) {
 
     ui->horizontalSlider->sub_range_start_changed(start_frame);
     ui->spinBox_clip_start->setValue(start_frame);
+    check_clip_buttons();
 }
 
 void QtOpenCVDepthmap::check_current_frame(int value) {
@@ -267,7 +277,16 @@ void QtOpenCVDepthmap::check_current_frame(int value) {
     if (current_frame != original_slider) {
         ui->horizontalSlider->setValue(current_frame);
     }
+    check_clip_buttons();
+}
 
+//Assumes active application
+void QtOpenCVDepthmap::check_clip_buttons() {
+    int start_frame = arguments.get_value<int>(Arguments::START_FRAME);
+    int end_frame = arguments.get_value<int>(Arguments::END_FRAME);
+    int current_frame = ui->horizontalSlider->value();
+    ui->button_set_clip_start->setEnabled(current_frame <= end_frame);
+    ui->button_set_clip_end->setEnabled(current_frame >= start_frame);
 }
 
 void QtOpenCVDepthmap::on_actionQuit_triggered()
@@ -305,4 +324,14 @@ void QtOpenCVDepthmap::on_actionExport_triggered()
         }
         progress.setValue(range);
     }
+}
+
+void QtOpenCVDepthmap::on_button_set_clip_start_clicked()
+{
+    check_start_frame(ui->horizontalSlider->value());
+}
+
+void QtOpenCVDepthmap::on_button_set_clip_end_clicked()
+{
+    check_end_frame(ui->horizontalSlider->value());
 }

@@ -63,6 +63,7 @@ class QtOpenCVDepthmap : public QMainWindow
         void check_end_frame(int value);
         void check_start_frame(int value);
         void check_current_frame(int value);
+        void check_clip_buttons();
 
     private slots:
         void on_actionOpen_triggered();
@@ -95,6 +96,10 @@ class QtOpenCVDepthmap : public QMainWindow
         void on_actionQuit_triggered();
 
         void on_actionExport_triggered();
+
+        void on_button_set_clip_start_clicked();
+
+        void on_button_set_clip_end_clicked();
 
 private:
         Arguments& arguments;
