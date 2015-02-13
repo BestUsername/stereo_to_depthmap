@@ -88,8 +88,8 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         output_fps = input_fps;
 
         int start_frame = arguments.get_value<int>(Arguments::START_FRAME);
-        start_frame = std::max(1,start_frame);
         int end_frame = arguments.get_value<int>(Arguments::END_FRAME);
+        start_frame = std::max(1,start_frame);
         if (end_frame <= 0) {
             end_frame = input_frame_count;
         }
@@ -103,8 +103,8 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
         //set position defaults
         ui->horizontalSlider->setSliderPosition(1);
         ui->spinBox_current_frame->setValue(1);
-        ui->spinBox_clip_start->setValue(start_frame);
         ui->spinBox_clip_end->setValue(end_frame);
+        ui->spinBox_clip_start->setValue(start_frame);
         ui->label_total_frames->setText(QString::number(input_frame_count));
 
         //only set application as active after all settings have been loaded
