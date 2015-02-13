@@ -14,8 +14,14 @@ public:
 
     std::shared_ptr<cv::VideoWriter> create_writer();
 
+    void set_next_frame(size_t frame_index);
+
     std::shared_ptr<cv::Mat> process_frame(size_t frame_index);
+    std::shared_ptr<cv::Mat> process_next_frame();
+
     void process_frame(size_t frame_index, cv::VideoWriter& output_feed);
+    void process_next_frame(cv::VideoWriter& output_feed);
+
     void process_range(size_t start_frame, size_t end_frame, cv::VideoWriter& output_feed);
     void process_clip(cv::VideoWriter& output_feed);
 private:

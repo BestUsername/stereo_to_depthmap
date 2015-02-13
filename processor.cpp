@@ -29,8 +29,18 @@ std::shared_ptr<cv::VideoWriter> Processor::create_writer() {
     return output_feed;
 }
 
+void Processor::set_next_frame(size_t frame_index) {
+    //set our specified starting frame to be the next captured
+    input.set(CV_CAP_PROP_POS_FRAMES, frame_index);
+}
+
 //frame_index is 0-indexed
 std::shared_ptr<cv::Mat> Processor::process_frame(size_t frame_index) {
+    set_next_frame(frame_index);
+    return process_next_frame();
+}
+
+std::shared_ptr<cv::Mat> Processor::process_next_frame() {
     //Update mapper arguments
 
     mapper.minDisparity        = arguments.get_value<int>  (Arguments::MIN_DISPARITY);
@@ -48,8 +58,6 @@ std::shared_ptr<cv::Mat> Processor::process_frame(size_t frame_index) {
     cv::Mat frame_src, left_eye, right_eye, frame_dst_16_gray, frame_dst_8_gray;
     std::shared_ptr<cv::Mat> output_frame(new cv::Mat());
 
-    //set our specified starting frame to be the next captured
-    input.set(CV_CAP_PROP_POS_FRAMES, frame_index);
     //capture current frame to matrix
     input >> frame_src;
 
@@ -68,13 +76,19 @@ std::shared_ptr<cv::Mat> Processor::process_frame(size_t frame_index) {
 }
 
 void Processor::process_frame(size_t frame_index, cv::VideoWriter& output_feed) {
-    output_feed << *(process_frame(frame_index));
+    set_next_frame(frame_index);
+    process_next_frame(output_feed);
+}
+
+void Processor::process_next_frame(cv::VideoWriter& output_feed) {
+    output_feed << *(process_next_frame());
 }
 
 //frame numbers are 0-indexed
 void Processor::process_range(size_t start_frame, size_t end_frame, cv::VideoWriter& output_feed) {
+    set_next_frame(start_frame);
     for (size_t index = start_frame; index <= end_frame; ++index) {
-        process_frame(index, output_feed);
+        process_next_frame(output_feed);
     }
 
 }

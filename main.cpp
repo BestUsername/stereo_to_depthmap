@@ -185,10 +185,11 @@ int main( int argc, char** argv ) {
 
                     size_t counter = 0;
 
+                    processor.set_next_frame(start_frame);
                     for (size_t index = start_frame; index <=end_frame; ++index) {
                         ++counter;
                         std::cout << "Processing frame " << counter << " of " << range << " [" << 100*counter/range << "%]\r" << std::flush;
-                        processor.process_frame(index, *output);
+                        processor.process_next_frame(*output);
                     }
                     std::cout << std::endl;
                 }

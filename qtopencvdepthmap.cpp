@@ -318,9 +318,11 @@ void QtOpenCVDepthmap::on_actionExport_triggered()
         QProgressDialog progress(exportLabel, "Cancel", 0, range, this);
         progress.setWindowModality(Qt::WindowModal);
 
+        processor.set_next_frame(start_frame);
+
         for (size_t index = start_frame; index <= end_frame && !progress.wasCanceled(); ++index) {
             progress.setValue(index - start_frame);
-            processor.process_frame(index, *output);
+            processor.process_next_frame(*output);
         }
         progress.setValue(range);
     }
