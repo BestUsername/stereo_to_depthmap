@@ -1,5 +1,9 @@
 #include "qtopencvwidgetgl.h"
 
+/**
+ * Constructor.
+ * @param parent Standard QWidget parent.
+ */
 QtOpenCVWidgetGL::QtOpenCVWidgetGL(QWidget *parent) :
     QGLWidget(parent)
 {
@@ -14,12 +18,20 @@ QtOpenCVWidgetGL::QtOpenCVWidgetGL(QWidget *parent) :
     mPosY = 0;
 }
 
+/**
+ * Initialize the widget and clear the GL canvas.
+ */
 void QtOpenCVWidgetGL::initializeGL()
 {
     makeCurrent();
     qglClearColor(mBgColor.darker());
 }
 
+/**
+ * Resize the current widget and update.
+ * @param width The new widget width.
+ * @param height The new widget height.
+ */
 void QtOpenCVWidgetGL::resizeGL(int width, int height)
 {
     makeCurrent();
@@ -53,12 +65,18 @@ void QtOpenCVWidgetGL::resizeGL(int width, int height)
     updateScene();
 }
 
+/**
+ * Update the GL viewport if the scene has changed and the widgit is visible.
+ */
 void QtOpenCVWidgetGL::updateScene()
 {
     if( mSceneChanged && this->isVisible() )
         updateGL();
 }
 
+/**
+ * If the scene is dirty, clear the viewport and render the image.
+ */
 void QtOpenCVWidgetGL::paintGL()
 {
     makeCurrent();
@@ -73,6 +91,9 @@ void QtOpenCVWidgetGL::paintGL()
     mSceneChanged = false;
 }
 
+/**
+ * Render the current CV matrix to the viewport using OpenGL.
+ */
 void QtOpenCVWidgetGL::renderImage()
 {
     makeCurrent();
@@ -123,6 +144,11 @@ void QtOpenCVWidgetGL::renderImage()
     }
 }
 
+/**
+ *
+ * @param image The image to display.
+ * @return True if the function executed without error.
+ */
 bool QtOpenCVWidgetGL::showImage( const cv::Mat &image )
 {
     image.copyTo(mOrigImage);

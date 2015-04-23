@@ -4,15 +4,23 @@
 #include "arguments.hpp"
 
 
-
+/**
+ * Constructor. Sets a default output filename, then resets all other parameters to their defaults.
+ */
 Arguments::Arguments() {
     output_filename_default = "output.avi";
     reset();
 }
 
+/**
+ * Destructor.
+ */
 Arguments::~Arguments() {
 }
 
+/**
+ * Sets all argument parameters to our defaults.
+ */
 void Arguments::reset() {
     g_args_mutex.lock(); // or, to be exception-safe, use std::lock_guard
     verbose = false;
@@ -36,6 +44,11 @@ void Arguments::reset() {
     g_args_mutex.unlock();
 }
 
+/**
+ * Check if the parameters are valid. If "correct" is set, then try to correct invalid settings.
+ * @param correct
+ * @return True if the arguments are valid after this function (in case "correct" is set).
+ */
 bool Arguments::is_valid(bool correct) {
     bool invalid = false;
 
@@ -46,6 +59,12 @@ bool Arguments::is_valid(bool correct) {
     return !invalid;
 }
 
+/**
+ * Check if a specific parameter is valid. If "correct" is set, then try to correct invalid settings.
+ * @param arg The argument to validate.
+ * @param correct Whether this function should attempt to correct invalid arguments.
+ * @return True if the argument is valid after this function  (in case "correct" is set).
+ */
 bool Arguments::is_valid(const Arg &arg, bool correct) {
     /*
      rules:

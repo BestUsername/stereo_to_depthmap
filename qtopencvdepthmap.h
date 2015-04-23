@@ -12,6 +12,9 @@ namespace Ui {
     class QtOpenCVDepthmap;
 }
 
+/**
+ * The main GUI class.
+ */
 class QtOpenCVDepthmap : public QMainWindow
 {
         Q_OBJECT

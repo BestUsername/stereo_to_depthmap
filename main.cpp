@@ -48,6 +48,13 @@ static struct argp_option options[] =
 PARSER. Field 2 in ARGP.
 Order of parameters: KEY, ARG, STATE.
 */
+/**
+ * Parse a command-line argument and store the value in the Arguments object.
+ * @param key The id of the argument to parse.
+ * @param arg The value of the argument to store.
+ * @param state Contains the Arguments object pointer.
+ * @return 0. Validation is handled later in the Arguments object.
+ */
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -147,7 +154,12 @@ The ARGP structure itself.
 */
 static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
-
+/**
+ * Main program structure. Sets up command-line arguments, decides whether to run with or without a gui, and then either executes the headless request or fires up the GUI.
+ * @param argc Number of command-line arguments.
+ * @param argv The contents of the command-line arguments.
+ * @return EXIT_SUCCESS if the application ran smoothly, or EXIT_FAILURE if not.
+ */
 int main( int argc, char** argv ) {
     int retval = EXIT_SUCCESS;
 

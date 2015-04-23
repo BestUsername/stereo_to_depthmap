@@ -4,6 +4,9 @@
 #include <QGLWidget>
 #include <opencv2/core/core.hpp>
 
+/**
+ * A GUI widget class to handle the display of OpenCV image matrices with OpenGL.
+ */
 class QtOpenCVWidgetGL : public QGLWidget
 {
         Q_OBJECT

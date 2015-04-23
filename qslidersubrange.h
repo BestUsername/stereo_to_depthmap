@@ -4,6 +4,9 @@
 #include <QSlider>
 #include <QColor>
 
+/**
+ * This adds the ability to display a double-ended sub-range on a QSlider.
+ */
 class QSliderSubRange : public QSlider
 {
     Q_OBJECT

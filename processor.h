@@ -7,6 +7,9 @@
 #include "opencv2/calib3d/calib3d.hpp" //StereoSGBM
 #include "arguments.hpp"
 
+/**
+ * This class handles the processing of the input video feed according to the application arguments.
+ */
 class Processor
 {
 public:

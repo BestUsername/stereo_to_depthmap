@@ -9,6 +9,11 @@
 #include "qtopencvdepthmap.h"
 #include "ui_qtopencvdepthmap.h"
 
+/**
+ * Constructor for the main GUI widget.
+ * @param args The command-line arguments object parsed by argp.
+ * @param parent Standard QWidget parent.
+ */
 QtOpenCVDepthmap::QtOpenCVDepthmap(Arguments& args, QWidget *parent) :
     QMainWindow(parent),
     arguments(args),
@@ -27,11 +32,18 @@ QtOpenCVDepthmap::QtOpenCVDepthmap(Arguments& args, QWidget *parent) :
     }
 }
 
+/**
+ * Destructor cleans up the UI.
+ */
 QtOpenCVDepthmap::~QtOpenCVDepthmap()
 {
     delete ui;
 }
 
+/**
+ * Set whether the application is "active". Active meaning that a valid input is loaded and the configuration controls should be enabled.
+ * @param isActive If the application should be "active" or not.
+ */
 void QtOpenCVDepthmap::set_active(bool isActive) {
     //set disparity inputs enabled/disabled
     ui->input_minDisparity->setEnabled(isActive);
@@ -64,6 +76,9 @@ void QtOpenCVDepthmap::set_active(bool isActive) {
     is_active = isActive;
 }
 
+/**
+ * Set the appropriate depthmap settings from the application arguments.
+ */
 void QtOpenCVDepthmap::args_to_mapper() {
     mapper.numberOfDisparities = arguments.get_value<int>(Arguments::NUM_DISPARITIES);
     mapper.disp12MaxDiff = arguments.get_value<int>(Arguments::DISP12_MAX_DIFF);
@@ -78,6 +93,10 @@ void QtOpenCVDepthmap::args_to_mapper() {
     mapper.uniquenessRatio = arguments.get_value<int>(Arguments::UNIQUENESS);
 }
 
+/**
+ * Open a video file for input.
+ * @param filename The video file to process.
+ */
 void QtOpenCVDepthmap::open_filename(const std::string& filename) {
     feed_src.open(filename);
     if (feed_src.isOpened()) {
@@ -129,6 +148,10 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
 }
 
 //Input is 1-indexed
+/**
+ * Fetch and display the specified source frame.
+ * @param index A 1-indexed value of the frame.
+ */
 void QtOpenCVDepthmap::fetch_frame(int index) {
     if (is_active) {
         //fetch and display source frame (0-indexed)
@@ -140,6 +163,9 @@ void QtOpenCVDepthmap::fetch_frame(int index) {
     }
 }
 
+/**
+ * Take the current input frame, process it, and display the depthmap.
+ */
 void QtOpenCVDepthmap::update_depthmap() {
     //compute depth map with current settings and display it
     left_eye = frame_src.colRange(0, split_width);
@@ -153,6 +179,9 @@ void QtOpenCVDepthmap::update_depthmap() {
     ui->depth_view->showImage(frame_dst_8_colour);
 }
 
+/**
+ * Action to start an open-file dialog.
+ */
 void QtOpenCVDepthmap::on_actionOpen_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open Video"), "", tr("Video Files (*.avi *.mpg *.mp4);;All Files (*.*)"));
@@ -161,58 +190,102 @@ void QtOpenCVDepthmap::on_actionOpen_triggered()
     }
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_minDisparity_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::MIN_DISPARITY, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_numDisparities_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::NUM_DISPARITIES, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_SADWindowSize_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::SAD_WINDOW_SIZE, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_P1_valueChanged(int arg1)
 {
     //if return value is true, have to check both p1 and p2
     update_mapper_value<int>(Arguments::P1, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_P2_valueChanged(int arg1)
 {
     //if return value is true, have to check both p1 and p2
     update_mapper_value<int>(Arguments::P2, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_disp12MAxDiff_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::DISP12_MAX_DIFF, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_preFilterCap_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::PRE_FILTER_CAP, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_uniqunessRatio_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::UNIQUENESS, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_speckleWindowSize_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::SPECKLE_WINDOW_SIZE, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_speckleRange_valueChanged(int arg1)
 {
     update_mapper_value<int>(Arguments::SPECKLE_RANGE, arg1);
 }
 
+/**
+ * Change the specified parameter.
+ * @param arg1 the new value.
+ */
 void QtOpenCVDepthmap::on_input_fullDP_stateChanged(int arg1)
 {
     /*
@@ -224,6 +297,10 @@ void QtOpenCVDepthmap::on_input_fullDP_stateChanged(int arg1)
     update_mapper_value<bool>(Arguments::FULL_DP, (arg1 != 0) );
 }
 
+/**
+ * The user has changed the current preview frame.
+ * @param frame_index The new frame to display.
+ */
 void QtOpenCVDepthmap::on_horizontalSlider_valueChanged(int frame_index)
 {
     if (is_active) {
@@ -233,11 +310,21 @@ void QtOpenCVDepthmap::on_horizontalSlider_valueChanged(int frame_index)
 }
 
 //function to force a value into a range (inclusive)
+/**
+ * Caps a value into a range.
+ * @param value The value to cap.
+ * @param min The minimum Value can be.
+ * @param max The maximum Value can be.
+ */
 template<typename T>
 void QtOpenCVDepthmap::correct_range(T& value, T min, T max) {
     value = std::min(std::max(value, min), max);
 }
 
+/**
+ * Handles the logic for modifying the end frame sub-range.
+ * @param value Which frame should mark the end of the processing range.
+ */
 void QtOpenCVDepthmap::check_end_frame(int value) {
     int start_frame = ui->spinBox_clip_start->value();
 
@@ -251,6 +338,10 @@ void QtOpenCVDepthmap::check_end_frame(int value) {
     check_clip_buttons();
 }
 
+/**
+ * Handles the logic for modifying the start frame sub-range.
+ * @param value Which frame should mark the start of the processing range.
+ */
 void QtOpenCVDepthmap::check_start_frame(int value) {
     int end_frame = ui->spinBox_clip_end->value();
 
@@ -264,6 +355,10 @@ void QtOpenCVDepthmap::check_start_frame(int value) {
     check_clip_buttons();
 }
 
+/**
+ * Handles the logic for setting the current frame.
+ * @param value Which frame to try and set the current frame to.
+ */
 void QtOpenCVDepthmap::check_current_frame(int value) {
     int original_spin = ui->spinBox_current_frame->value();
     int original_slider = ui->horizontalSlider->value();
@@ -280,7 +375,10 @@ void QtOpenCVDepthmap::check_current_frame(int value) {
     check_clip_buttons();
 }
 
-//Assumes active application
+/**
+ * Checks to see if the current frame is a valid value to set as the beginning or end of a clip range.
+ * Set the GUI controls accordingly. Assumes the application is active.
+ */
 void QtOpenCVDepthmap::check_clip_buttons() {
     int start_frame = arguments.get_value<int>(Arguments::START_FRAME);
     int end_frame = arguments.get_value<int>(Arguments::END_FRAME);
@@ -289,11 +387,18 @@ void QtOpenCVDepthmap::check_clip_buttons() {
     ui->button_set_clip_end->setEnabled(current_frame >= start_frame);
 }
 
+/**
+ * Quit the application.
+ */
 void QtOpenCVDepthmap::on_actionQuit_triggered()
 {
     this->close();
 }
 
+/**
+ * The user has chosen to export the current selection with the current settings.
+ * Request an output video filename, and process it.
+ */
 void QtOpenCVDepthmap::on_actionExport_triggered()
 {
     std::string output_filename = arguments.get_value<std::string>(Arguments::OUTPUT_FILENAME);
@@ -328,11 +433,17 @@ void QtOpenCVDepthmap::on_actionExport_triggered()
     }
 }
 
+/**
+ * The user has specified that the current frame should be the start of the output clip.
+ */
 void QtOpenCVDepthmap::on_button_set_clip_start_clicked()
 {
     check_start_frame(ui->horizontalSlider->value());
 }
 
+/**
+ * The user has sepecified that the current frame should be the end of the output clip.
+ */
 void QtOpenCVDepthmap::on_button_set_clip_end_clicked()
 {
     check_end_frame(ui->horizontalSlider->value());

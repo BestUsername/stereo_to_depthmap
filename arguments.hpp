@@ -4,7 +4,9 @@
 #include <mutex>
 static std::mutex g_args_mutex;
 
-/* This class is used by main to communicate with parse_opt. */
+/**
+ * A class to hold all command-line arguments and processing settings. Used with parse_opt of argp.
+ */
 class Arguments
 {
     public:

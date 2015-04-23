@@ -3,6 +3,10 @@
 
 #include "qslidersubrange.h"
 
+/**
+ * Constructor.
+ * @param parent Standard QWidget parent.
+ */
 QSliderSubRange::QSliderSubRange(QWidget *parent) :
     QSlider(parent)
 {
@@ -12,6 +16,10 @@ QSliderSubRange::QSliderSubRange(QWidget *parent) :
     sub_range_colour = Qt::blue;
 }
 
+/**
+ * Paint the sub-range on the QSlider widget.
+ * @param event The paint event requesting a redraw.
+ */
 void QSliderSubRange::paintEvent(QPaintEvent *event) {
     //guarantee we don't div/0
     double temp_max = std::max(this->maximum(), 1);
@@ -35,11 +43,19 @@ void QSliderSubRange::paintEvent(QPaintEvent *event) {
 
 }
 
+/**
+ * Change the start-value for the range.
+ * @param value The specified starting frame index.
+ */
 void QSliderSubRange::sub_range_start_changed(int value) {
     sub_range_start_frame = value;
     this->update();
 }
 
+/**
+ * Change the end-value for the range.
+ * @param value The specified ending frame index.
+ */
 void QSliderSubRange::sub_range_end_changed(int value) {
     sub_range_end_frame = value;
     this->update();
