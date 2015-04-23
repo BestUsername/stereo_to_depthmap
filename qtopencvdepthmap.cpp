@@ -19,7 +19,7 @@ QtOpenCVDepthmap::QtOpenCVDepthmap(Arguments& args, QWidget *parent) :
     arguments(args),
     ui(new Ui::QtOpenCVDepthmap)
 {
-
+    first_load = true;
     args_to_mapper();
     ui->setupUi(this);
 
@@ -117,10 +117,17 @@ void QtOpenCVDepthmap::open_filename(const std::string& filename) {
 
         int start_frame = arguments.get_value<int>(Arguments::START_FRAME);
         int end_frame = arguments.get_value<int>(Arguments::END_FRAME);
-        start_frame = std::max(1,start_frame);
+        if (!first_load) {
+            start_frame = 1;
+            end_frame = input_frame_count;
+        } else {
+            first_load = false;
+        }
+        correct_range(start_frame, 1, (int)input_frame_count-1);
         if (end_frame <= 0) {
             end_frame = input_frame_count;
         }
+        correct_range(end_frame, start_frame, (int)input_frame_count);
 
         //set scrubber range
         ui->horizontalSlider->setRange(1, input_frame_count);

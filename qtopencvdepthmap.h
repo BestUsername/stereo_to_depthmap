@@ -108,6 +108,7 @@ private:
         Arguments& arguments;
 
         Ui::QtOpenCVDepthmap *ui;
+        bool first_load;
         bool is_active;
 
         cv::StereoSGBM mapper;
